@@ -80,18 +80,19 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void drawTrianglesAndElements(Graphics2D g2d) {
         // Пример рисования элементов на основе изображения
 
-        // Рисуем большие треугольники
-        drawTriangle(g2d, 400, 100, 300, 400, 500, 400, new Color(255, 0, 255), 5); // Магента треугольник (Альтер-Эго)
-        drawTriangle(g2d, 300, 400, 200, 700, 400, 700, new Color(0, 255, 0), 5); // Зеленый треугольник (Деньги/Карьера)
-        drawTriangle(g2d, 500, 400, 400, 700, 600, 700, new Color(0, 0, 255), 5); // Синий треугольник (Карм. задача)
-
+        // Рисуем большие треугольники с внутренней заливкой
+        drawTriangle(g2d, 400, 50, 250, 400, 550, 400, new Color(255, 0, 255), 5); // Магента треугольник (Альтер-Эго)
+        drawTriangle(g2d, 250, 400, 150, 750, 400, 750, new Color(0, 255, 0), 5); // Зеленый треугольник (Деньги/Карьера)
+        drawTriangle(g2d, 550, 400, 400, 750, 650, 750, new Color(0, 0, 255), 5); // Синий треугольник (Карм. задача)
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
         g2d.setColor(color);
-        g2d.setStroke(new BasicStroke(strokeWidth));
         int[] xPoints = {x1, x2, x3};
         int[] yPoints = {y1, y2, y3};
+        g2d.fillPolygon(xPoints, yPoints, 3);
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(new BasicStroke(strokeWidth));
         g2d.drawPolygon(xPoints, yPoints, 3);
     }
 
