@@ -71,13 +71,20 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setStroke(new BasicStroke(2));
 
         // Логика рисования треугольников и других элементов
-        // Пример: Рисование трех треугольников
-        drawTriangle(g2d, 100, 100, 200, 100, 150, 200, Color.MAGENTA, 5);
-        drawTriangle(g2d, 200, 200, 300, 200, 250, 300, Color.GREEN, 5);
-        drawTriangle(g2d, 300, 300, 400, 300, 350, 400, Color.BLUE, 5);
+        drawTrianglesAndElements(g2d);
 
         g2d.dispose();
         return image;
+    }
+
+    private void drawTrianglesAndElements(Graphics2D g2d) {
+        // Пример рисования элементов на основе изображения
+
+        // Рисуем большие треугольники
+        drawTriangle(g2d, 400, 100, 300, 400, 500, 400, new Color(255, 0, 255), 5); // Магента треугольник (Альтер-Эго)
+        drawTriangle(g2d, 300, 400, 200, 700, 400, 700, new Color(0, 255, 0), 5); // Зеленый треугольник (Деньги/Карьера)
+        drawTriangle(g2d, 500, 400, 400, 700, 600, 700, new Color(0, 0, 255), 5); // Синий треугольник (Карм. задача)
+
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
@@ -86,6 +93,23 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int[] xPoints = {x1, x2, x3};
         int[] yPoints = {y1, y2, y3};
         g2d.drawPolygon(xPoints, yPoints, 3);
+    }
+
+    private void drawLine(Graphics2D g2d, int x1, int y1, int x2, int y2, Color color, int strokeWidth) {
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(strokeWidth));
+        g2d.drawLine(x1, y1, x2, y2);
+    }
+
+    private void drawCircle(Graphics2D g2d, int x, int y, int radius, Color color) {
+        g2d.setColor(color);
+        g2d.fillOval(x - radius, y - radius, 2 * radius, 2 * radius);
+    }
+
+    private void drawText(Graphics2D g2d, String text, int x, int y, Font font, Color color) {
+        g2d.setColor(color);
+        g2d.setFont(font);
+        g2d.drawString(text, x, y);
     }
 
     private void sendImage(long chatId, BufferedImage image) throws IOException, TelegramApiException {
@@ -123,4 +147,3 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
