@@ -126,7 +126,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Добавление значений центров
         drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Личности
-        drawText(g2d, Integer.toString(centerDestiny), 555, 490, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
+        drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
         drawText(g2d, Integer.toString(centerFamilyPrograms), 245, 490, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
 
         // Подписи
@@ -136,8 +136,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Ключ реализации Таланта", 70, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
 
         // Подписи для центров
-        drawText(g2d, "Центр Личности", 140, 420, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Центр Предназначения", 540, 510, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Центр Личности", 140, 410, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Центр Предназначения", 560, 415, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Центр Родовых Программ", 230, 510, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
