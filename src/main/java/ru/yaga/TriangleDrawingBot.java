@@ -56,6 +56,19 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
+    private int sumOfDigits(int number) {
+        int sum = 0;
+        while (number != 0) {
+            sum += number % 10;
+            number /= 10;
+        }
+        return sum;
+    }
+
+    private int calculateYearValue(int year) {
+        return sumOfDigits(year);
+    }
+
     private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
         int width = 800;
         int height = 800;
@@ -70,48 +83,41 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2));
 
+        // Расчет значений вершин
+        int alterEgo = day;
+        int destinyKey = month;
+        int talentKey = calculateYearValue(year);
+
         // Логика рисования треугольников и других элементов
-        drawTrianglesAndElements(g2d);
+        drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey);
 
         g2d.dispose();
         return image;
     }
 
-    private void drawTrianglesAndElements(Graphics2D g2d) {
+    private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey) {
         // Координаты точек треугольника
         int[] xPoints = {400, 100, 700};
         int[] yPoints = {100, 700, 700};
 
         // Рисуем большой внешний треугольник
-        drawTriangle(g2d, xPoints[0], yPoints[0], xPoints[1], yPoints[1], xPoints[2], yPoints[2], new Color(255, 0, 255), 2);
+        drawTriangle(g2d, xPoints[0], yPoints[0], xPoints[1], yPoints[1], xPoints[2], yPoints[2], Color.GRAY, 2);
 
         // Внутренние треугольники
+        drawTriangle(g2d, 400, 100, 250, 400, 550, 400, new Color(255, 0, 255), 2); // Верхний треугольник (розовый)
         drawTriangle(g2d, 250, 400, 100, 700, 400, 700, new Color(0, 255, 0), 2); // Левый нижний треугольник (зеленый)
         drawTriangle(g2d, 550, 400, 400, 700, 700, 700, new Color(128, 0, 128), 2); // Правый нижний треугольник (фиолетовый)
-        drawTriangle(g2d, 400, 100, 250, 400, 550, 400, new Color(255, 0, 255), 2); // Верхний треугольник (розовый)
-
-        // Центральный белый треугольник
-        drawTriangle(g2d, 250, 400, 400, 700, 550, 400, Color.WHITE, 2);
+        drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2); // Центральный треугольник (белый)
 
         // Добавление текста и номеров
-        drawText(g2d, "2", 390, 90, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
-        drawText(g2d, "5", 380, 350, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Средняя точка
-
-        // Номера на треугольниках
-        drawText(g2d, "1", 140, 470, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая точка (слева)
-        drawText(g2d, "1", 650, 470, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая точка (слева)
-        drawText(g2d, "4", 380, 650, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Нижняя центральная точка
-        drawText(g2d, "3", 490, 600, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центральная точка (справа)
-        drawText(g2d, "21", 60, 740, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Нижняя левая точка
-        drawText(g2d, "22", 360, 780, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Нижняя средняя точка
-        drawText(g2d, "22", 600, 740, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Нижняя правая точка
+        drawText(g2d, Integer.toString(alterEgo), 390, 90, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
+        drawText(g2d, Integer.toString(destinyKey), 690, 710, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
+        drawText(g2d, Integer.toString(talentKey), 90, 710, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
 
         // Подписи
-        drawText(g2d, "Линия сердца 1-4-3", 20, 790, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-
-        drawText(g2d, "Любовь/Отношения/Коммуникации 1-я Тема - 12", 20, 820, new Font("Arial", Font.PLAIN, 12), new Color(255, 0, 255));
-        drawText(g2d, "Деньги/Карьера 2-я Тема - 22", 20, 840, new Font("Arial", Font.PLAIN, 12), new Color(0, 255, 0));
-        drawText(g2d, "Предназначение/Кармическая задача 3-я Тема - 8", 20, 860, new Font("Arial", Font.PLAIN, 12), new Color(128, 0, 128));
+        drawText(g2d, "Альтер-Эго", 380, 70, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Ключ реализации Предназначения", 620, 730, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Ключ реализации Таланта", 60, 730, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
@@ -165,5 +171,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
+
+
+
 
 
