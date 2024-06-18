@@ -56,25 +56,17 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private int sumOfDigits(int number) {
-        while (number > 9) {
-            int sum = 0;
-            while (number != 0) {
-                sum += number % 10;
-                number /= 10;
-            }
-            number = sum;
-        }
-        return number;
+    private int applyMinus22Rule(int number) {
+        return (number > 22) ? number - 22 : number;
     }
 
-    private int calculateYearValue(int year) {
+    private int sumOfDigits(int number) {
         int sum = 0;
-        while (year != 0) {
-            sum += year % 10;
-            year /= 10;
+        while (number != 0) {
+            sum += number % 10;
+            number /= 10;
         }
-        return sum;
+        return applyMinus22Rule(sum);
     }
 
     private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
@@ -92,18 +84,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setStroke(new BasicStroke(2));
 
         // Расчет значений вершин
-        int alterEgo = sumOfDigits(day);  // Альтер-Эго: сумма цифр дня рождения, приведенная к одной цифре
+        int alterEgo = applyMinus22Rule(day);  // Альтер-Эго: применяем закон минус 22 к дню рождения
         int destinyKey = month;  // Ключ реализации Предназначения: месяц рождения
-        int talentKey = calculateYearValue(year);  // Ключ реализации Таланта: сумма цифр года рождения
-
-        // Пример для даты 24.01.1974:
-        // Альтер-Эго: 2 (2 + 4 = 6; 6 = 2, если необходимо)
-        // Ключ реализации Предназначения: 1
-        // Ключ реализации Таланта: 21 (1 + 9 + 7 + 4 = 21)
-
-        if (alterEgo == 6) {
-            alterEgo = 2; // специальное правило для Альтер-Эго
-        }
+        int talentKey = sumOfDigits(year);  // Ключ реализации Таланта: сумма цифр года рождения с применением закона минус 22
 
         // Логика рисования треугольников и других элементов
         drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey);
@@ -127,14 +110,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2); // Центральный треугольник (белый)
 
         // Добавление текста и номеров
-        drawText(g2d, Integer.toString(alterEgo), 390, 90, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
-        drawText(g2d, Integer.toString(destinyKey), 690, 710, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
-        drawText(g2d, Integer.toString(talentKey), 90, 710, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
+        drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
+        drawText(g2d, Integer.toString(destinyKey), 685, 705, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
+        drawText(g2d, Integer.toString(talentKey), 85, 705, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
 
         // Подписи
-        drawText(g2d, "Альтер-Эго", 380, 70, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Ключ реализации Предназначения", 620, 730, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Ключ реализации Таланта", 60, 730, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Ключ реализации", 620, 710, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Предназначения", 620, 725, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Ключ реализации Таланта", 50, 710, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
