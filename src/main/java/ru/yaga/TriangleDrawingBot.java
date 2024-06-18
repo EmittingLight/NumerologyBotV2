@@ -111,14 +111,14 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Добавление текста и номеров
         drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
-        drawText(g2d, Integer.toString(destinyKey), 685, 705, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
-        drawText(g2d, Integer.toString(talentKey), 85, 705, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
+        drawText(g2d, Integer.toString(destinyKey), 690, 710, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
+        drawText(g2d, Integer.toString(talentKey), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
 
         // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Ключ реализации", 620, 710, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Предназначения", 620, 725, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Ключ реализации Таланта", 50, 710, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Ключ реализации", 600, 730, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Предназначения", 600, 745, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Ключ реализации Таланта", 70, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
@@ -172,7 +172,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
 
 
 
