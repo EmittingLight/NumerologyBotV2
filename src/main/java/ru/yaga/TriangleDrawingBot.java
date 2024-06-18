@@ -110,7 +110,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2); // Центральный треугольник (белый)
 
         // Добавление текста и номеров
-        drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
+        drawText(g2d, Integer.toString(alterEgo), 395, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
         drawText(g2d, Integer.toString(destinyKey), 705, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
         drawText(g2d, Integer.toString(talentKey), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
 
