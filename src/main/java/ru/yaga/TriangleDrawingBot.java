@@ -69,6 +69,11 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return applyMinus22Rule(sum);
     }
 
+    private int calculateSoulKey(int value1, int value2) {
+        int sum = value1 + value2;
+        return applyMinus22Rule(sum);
+    }
+
     private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
         int width = 800;
         int height = 800;
@@ -88,14 +93,19 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int destinyKey = month;  // Ключ реализации Предназначения: месяц рождения
         int talentKey = sumOfDigits(year);  // Ключ реализации Таланта: сумма цифр года рождения с применением закона минус 22
 
+        // Расчет значений для центров
+        int centerPersonality = calculateSoulKey(alterEgo, talentKey);
+        int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
+        int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
+
         // Логика рисования треугольников и других элементов
-        drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey);
+        drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms);
 
         g2d.dispose();
         return image;
     }
 
-    private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey) {
+    private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey, int centerPersonality, int centerDestiny, int centerFamilyPrograms) {
         // Координаты точек треугольника
         int[] xPoints = {400, 100, 700};
         int[] yPoints = {100, 700, 700};
@@ -110,15 +120,25 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2); // Центральный треугольник (белый)
 
         // Добавление текста и номеров
-        drawText(g2d, Integer.toString(alterEgo), 395, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
+        drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
         drawText(g2d, Integer.toString(destinyKey), 705, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
         drawText(g2d, Integer.toString(talentKey), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
+
+        // Добавление значений центров
+        drawText(g2d, Integer.toString(centerPersonality), 385, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Личности
+        drawText(g2d, Integer.toString(centerDestiny), 555, 490, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
+        drawText(g2d, Integer.toString(centerFamilyPrograms), 245, 490, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
 
         // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Ключ реализации", 690, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Предназначения", 690, 735, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Ключ реализации Таланта", 70, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+
+        // Подписи для центров
+        drawText(g2d, "Центр Личности", 370, 420, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Центр Предназначения", 540, 510, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Центр Родовых Программ", 230, 510, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
@@ -172,6 +192,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
 
