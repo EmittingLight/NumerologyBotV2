@@ -127,7 +127,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         // Добавление значений центров
         drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Личности
         drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
-        drawText(g2d, Integer.toString(centerFamilyPrograms), 245, 490, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
+        drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
 
         // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
@@ -138,7 +138,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         // Подписи для центров
         drawText(g2d, "Центр Личности", 140, 410, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Центр Предназначения", 560, 415, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Центр Родовых Программ", 230, 510, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Центр Родовых Программ", 390, 735, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
