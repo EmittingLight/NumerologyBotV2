@@ -57,16 +57,24 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     }
 
     private int sumOfDigits(int number) {
-        int sum = 0;
-        while (number != 0) {
-            sum += number % 10;
-            number /= 10;
+        while (number > 9) {
+            int sum = 0;
+            while (number != 0) {
+                sum += number % 10;
+                number /= 10;
+            }
+            number = sum;
         }
-        return sum;
+        return number;
     }
 
     private int calculateYearValue(int year) {
-        return sumOfDigits(year);
+        int sum = 0;
+        while (year != 0) {
+            sum += year % 10;
+            year /= 10;
+        }
+        return sum;
     }
 
     private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
@@ -84,9 +92,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setStroke(new BasicStroke(2));
 
         // Расчет значений вершин
-        int alterEgo = day;
-        int destinyKey = month;
-        int talentKey = calculateYearValue(year);
+        int alterEgo = sumOfDigits(day);  // Альтер-Эго: сумма цифр дня рождения, приведенная к одной цифре
+        int destinyKey = month;  // Ключ реализации Предназначения: месяц рождения
+        int talentKey = calculateYearValue(year);  // Ключ реализации Таланта: сумма цифр года рождения
+
+        // Пример для даты 24.01.1974:
+        // Альтер-Эго: 2 (2 + 4 = 6; 6 = 2, если необходимо)
+        // Ключ реализации Предназначения: 1
+        // Ключ реализации Таланта: 21 (1 + 9 + 7 + 4 = 21)
+
+        if (alterEgo == 6) {
+            alterEgo = 2; // специальное правило для Альтер-Эго
+        }
 
         // Логика рисования треугольников и других элементов
         drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey);
@@ -104,9 +121,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawTriangle(g2d, xPoints[0], yPoints[0], xPoints[1], yPoints[1], xPoints[2], yPoints[2], Color.GRAY, 2);
 
         // Внутренние треугольники
-        drawTriangle(g2d, 400, 100, 250, 400, 550, 400, new Color(255, 0, 255), 2); // Верхний треугольник (розовый)
-        drawTriangle(g2d, 250, 400, 100, 700, 400, 700, new Color(0, 255, 0), 2); // Левый нижний треугольник (зеленый)
-        drawTriangle(g2d, 550, 400, 400, 700, 700, 700, new Color(128, 0, 128), 2); // Правый нижний треугольник (фиолетовый)
+        drawTriangle(g2d, 400, 100, 250, 400, 550, 400, new Color(255, 0, 255), 2); // Верхний треугольник (ярко-розовый)
+        drawTriangle(g2d, 250, 400, 100, 700, 400, 700, new Color(0, 255, 0), 2); // Левый нижний треугольник (ярко-зеленый)
+        drawTriangle(g2d, 550, 400, 400, 700, 700, 700, new Color(128, 0, 128), 2); // Правый нижний треугольник (ярко-фиолетовый)
         drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2); // Центральный треугольник (белый)
 
         // Добавление текста и номеров
@@ -171,6 +188,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
 
