@@ -144,7 +144,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Любовного сценария
         drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска реализации Таланта
         drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармической задачи
-        drawText(g2d, Integer.toString(maskHealingLoveScenario), 150, 460, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления любовного сценария
+        drawText(g2d, Integer.toString(maskHealingLoveScenario), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления любовного сценария
         drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармического Предназначения
         drawText(g2d, Integer.toString(maskFinancialHealing), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления денежного сценария
         drawText(g2d, Integer.toString(maskHeartLine), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска линии Сердца
@@ -164,8 +164,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Маска Любовного сценария", 150, 255, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска реализации Таланта", 40, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска Кармической задачи", 490, 255, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Маска Исцеления любовного сценария", 150, 440, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Маска Кармического Предназначения", 640, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска Исцеления любовного сценария", 380, 560, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска Кармического Предназначения", 630, 560, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска Исцеления денежного сценария", 250, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска линии Сердца", 500, 695, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
