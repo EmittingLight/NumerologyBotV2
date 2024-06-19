@@ -98,14 +98,25 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
 
+        // Расчет значений для масок
+        int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
+        int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
+        int maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
+        int maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
+        int maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
+        int maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
+        int maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
+
         // Логика рисования треугольников и других элементов
-        drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms);
+        drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms,
+                maskLoveScenario, maskTalentRealization, maskKarmicTask, maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing, maskHeartLine);
 
         g2d.dispose();
         return image;
     }
 
-    private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey, int centerPersonality, int centerDestiny, int centerFamilyPrograms) {
+    private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey, int centerPersonality, int centerDestiny, int centerFamilyPrograms,
+                                          int maskLoveScenario, int maskTalentRealization, int maskKarmicTask, int maskHealingLoveScenario, int maskKarmicDestiny, int maskFinancialHealing, int maskHeartLine) {
         // Координаты точек треугольника
         int[] xPoints = {400, 100, 700};
         int[] yPoints = {100, 700, 700};
@@ -129,6 +140,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
         drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
 
+        // Добавление значений масок
+        drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Любовного сценария
+        drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска реализации Таланта
+        drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармической задачи
+        drawText(g2d, Integer.toString(maskHealingLoveScenario), 150, 460, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления любовного сценария
+        drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 460, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармического Предназначения
+        drawText(g2d, Integer.toString(maskFinancialHealing), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления денежного сценария
+        drawText(g2d, Integer.toString(maskHeartLine), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска линии Сердца
+
         // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Ключ реализации", 690, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
@@ -139,6 +159,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Центр Личности", 140, 410, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Центр Предназначения", 560, 415, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Центр Родовых Программ", 390, 735, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+
+        // Подписи для масок
+        drawText(g2d, "Маска Любовного сценария", 150, 255, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска реализации Таланта", 40, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска Кармической задачи", 490, 255, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска Исцеления любовного сценария", 150, 440, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска Кармического Предназначения", 640, 440, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска Исцеления денежного сценария", 250, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска линии Сердца", 640, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
