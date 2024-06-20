@@ -150,7 +150,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармического Предназначения
         drawText(g2d, Integer.toString(maskFinancialHealing), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления денежного сценария
         drawText(g2d, Integer.toString(maskHeartLine), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска линии Сердца
-        drawText(g2d, Integer.toString(maskLoveTransmission), 420, 620, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи любви
+        drawText(g2d, Integer.toString(maskLoveTransmission), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи любви
         drawText(g2d, Integer.toString(maskScenarioTransmission), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи сценария
 
         // Подписи
@@ -172,7 +172,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Маска Кармического Предназначения", 630, 560, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска Исцеления денежного сценария", 250, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска линии Сердца", 500, 695, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
-        drawText(g2d, "Маска передачи любви", 410, 620, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
+        drawText(g2d, "Маска передачи любви", 350, 393, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска передачи сценария", 190, 695, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
     }
 
