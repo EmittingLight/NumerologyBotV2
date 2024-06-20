@@ -106,8 +106,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
         int maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
         int maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
-        int maskLoveTransmission = calculateSoulKey(alterEgo, centerDestiny);
-        int maskScenarioTransmission = calculateSoulKey(centerDestiny, centerFamilyPrograms);
+        int maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny); // Исправленная формула
+        int maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms); // Исправленная формула
 
         // Логика рисования треугольников и других элементов
         drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms,
@@ -227,6 +227,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
 
