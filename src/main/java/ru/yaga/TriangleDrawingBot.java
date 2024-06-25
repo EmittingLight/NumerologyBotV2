@@ -99,8 +99,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     }
 
     private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
-        int width = 800;
-        int height = 800;
+        int width = 1000;
+        int height = 1000;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = image.createGraphics();
 
@@ -143,6 +143,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms,
                 maskLoveScenario, maskTalentRealization, maskKarmicTask, maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing, maskHeartLine, maskLoveTransmission, maskScenarioTransmission,
                 shadow1, shadow2, shadow3, typage);
+
+        // Добавление маленьких треугольников и подписей
+        drawSmallTrianglesAndText(g2d, shadow1, shadow2, shadow3, typage);
 
         g2d.dispose();
         return image;
@@ -216,6 +219,42 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Типаж: " + typage, 50, 140, new Font("Arial", Font.BOLD, 20), Color.RED);
     }
 
+    private void drawSmallTrianglesAndText(Graphics2D g2d, int shadow1, int shadow2, int shadow3, int typage) {
+        // Позиции и размеры маленьких треугольников
+        int triangleSize = 20;
+        int startX = 50;
+        int startY = 750;
+
+        // Рисуем маленькие треугольники и добавляем текст рядом
+        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(255, 0, 255)); // Розовый треугольник
+        drawText(g2d, "Любовь/Отношения/Коммуникации", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "1-я Тень - " + shadow1, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+
+        startY += 60;
+        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(0, 255, 0)); // Зеленый треугольник
+        drawText(g2d, "Деньги/Карьера", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "2-я Тень - " + shadow2, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+
+        startY += 60;
+        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(128, 0, 128)); // Фиолетовый треугольник
+        drawText(g2d, "Предназначение/Кармическая задача", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "3-я Тень - " + shadow3, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+
+        startY += 60;
+        drawSmallTriangle(g2d, startX, startY, triangleSize, Color.WHITE); // Белый треугольник
+        drawText(g2d, "Типаж - " + typage, startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+    }
+
+    private void drawSmallTriangle(Graphics2D g2d, int x, int y, int size, Color color) {
+        g2d.setColor(color);
+        int[] xPoints = {x, x + size / 2, x - size / 2};
+        int[] yPoints = {y, y + size, y + size};
+        g2d.fillPolygon(xPoints, yPoints, 3);
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(new BasicStroke(1));
+        g2d.drawPolygon(xPoints, yPoints, 3);
+    }
+
     private void drawTriangle(Graphics2D g2d, int x1, int y1, int x2, int y2, int x3, int y3, Color color, int strokeWidth) {
         g2d.setColor(color);
         int[] xPoints = {x1, x2, x3};
@@ -267,6 +306,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
 
