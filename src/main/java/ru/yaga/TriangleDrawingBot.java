@@ -241,8 +241,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "3-я Тень - " + shadow3, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
-        drawSmallTriangle(g2d, startX, startY, triangleSize, Color.WHITE); // Белый треугольник
-        drawText(g2d, "Типаж - " + typage, startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawSmallTriangle(g2d, startX + 300, startY - 180, triangleSize, Color.WHITE); // Белый треугольник правее и выше
+        drawText(g2d, "Типаж - " + typage, startX + 320, startY - 165, new Font("Arial", Font.PLAIN, 14), Color.BLACK); // Текст сдвинут вместе с треугольником
     }
 
     private void drawSmallTriangle(Graphics2D g2d, int x, int y, int size, Color color) {
