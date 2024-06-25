@@ -25,7 +25,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "REMOVED_TOKEN"; // Замените на токен вашего бота
+        return "REMOVED_TOKEN";
     }
 
     @Override
