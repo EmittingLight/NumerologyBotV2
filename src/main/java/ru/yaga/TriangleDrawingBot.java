@@ -98,6 +98,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return shadow1 + shadow2 + shadow3;
     }
 
+    // Метод для вычисления точки сборки
+    private int calculateAssemblyPoint(int destinyKey, int talentKey, int centerFamilyPrograms, int centerPersonality, int centerDestiny) {
+        int sum = destinyKey + talentKey + centerFamilyPrograms + centerPersonality + centerDestiny;
+        return applyMinus22Rule(sum);
+    }
+
+    // Метод для вычисления инкарнационного профиля
+    private int calculateIncarnationProfile(int shadow1, int shadow2, int shadow3, int typage) {
+        int sum = shadow1 + shadow2 + shadow3 + typage;
+        return applyMinus22Rule(sum);
+    }
+
     private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
         int width = 1000;
         int height = 1000;
@@ -114,39 +126,24 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Расчет значений вершин
         int alterEgo = applyMinus22Rule(day);  // Альтер-Эго: применяем закон минус 22 к дню рождения
-        System.out.println("25. " + alterEgo);
         int destinyKey = month;  // Ключ реализации Предназначения: месяц рождения
-        System.out.println("26. " + destinyKey);
         int talentKey = sumOfDigits(year);  // Ключ реализации Таланта: сумма цифр года рождения с применением закона минус 22
-        System.out.println("27. " + talentKey);
 
         // Расчет значений для центров
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
-        System.out.println("13. " + centerPersonality);
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
-        System.out.println("14. " + centerDestiny);
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
-        System.out.println("15. " + centerFamilyPrograms);
 
         // Расчет значений для масок
         int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
-        System.out.println("16. " + maskLoveScenario);
         int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
-        System.out.println("17. " + maskTalentRealization);
         int maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
-        System.out.println("18. " + maskKarmicTask);
         int maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
-        System.out.println("19. " + maskHealingLoveScenario);
         int maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
-        System.out.println("20. " + maskKarmicDestiny);
         int maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
-        System.out.println("21. " + maskFinancialHealing);
         int maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
-        System.out.println("22. " + maskHeartLine);
         int maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
-        System.out.println("23. " + maskLoveTransmission);
         int maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
-        System.out.println("24. " + maskScenarioTransmission);
 
         // Новые расчеты для теней и типажа
         int shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
@@ -154,13 +151,19 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int shadow3 = calculateShadow(maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing);
         int typage = calculateTypage(shadow1, shadow2, shadow3);
 
+        // Расчет точки сборки
+        int assemblyPoint = calculateAssemblyPoint(destinyKey, talentKey, centerFamilyPrograms, centerPersonality, centerDestiny);
+
+        // Расчет инкарнационного профиля
+        int incarnationProfile = calculateIncarnationProfile(shadow1, shadow2, shadow3, typage);
+
         // Логика рисования треугольников и других элементов
         drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms,
                 maskLoveScenario, maskTalentRealization, maskKarmicTask, maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing, maskHeartLine, maskLoveTransmission, maskScenarioTransmission,
-                shadow1, shadow2, shadow3, typage);
+                shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile);
 
         // Добавление маленьких треугольников и подписей
-        drawSmallTrianglesAndText(g2d, shadow1, shadow2, shadow3, typage);
+        drawSmallTrianglesAndText(g2d, shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile);
 
         g2d.dispose();
         return image;
@@ -168,7 +171,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey, int centerPersonality, int centerDestiny, int centerFamilyPrograms,
                                           int maskLoveScenario, int maskTalentRealization, int maskKarmicTask, int maskHealingLoveScenario, int maskKarmicDestiny, int maskFinancialHealing, int maskHeartLine, int maskLoveTransmission, int maskScenarioTransmission,
-                                          int shadow1, int shadow2, int shadow3, int typage) {
+                                          int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile) {
         // Координаты точек треугольника
         int[] xPoints = {400, 100, 700};
         int[] yPoints = {100, 700, 700};
@@ -189,31 +192,19 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Добавление значений центров
         drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Личности
-        System.out.println("1. " + centerPersonality);
         drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
-        System.out.println("2. " + centerDestiny);
         drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
-        System.out.println("3. " + centerDestiny);
 
         // Добавление значений масок
         drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Любовного сценария
-        System.out.println("4. " + maskLoveScenario);
         drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска реализации Таланта
-        System.out.println("5. " + maskTalentRealization);
         drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармической задачи
-        System.out.println("6. " + maskKarmicTask);
         drawText(g2d, Integer.toString(maskHealingLoveScenario), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления любовного сценария
-        System.out.println("7. " + maskHealingLoveScenario);
         drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармического Предназначения
-        System.out.println("8. " + maskKarmicDestiny);
         drawText(g2d, Integer.toString(maskFinancialHealing), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления денежного сценария
-        System.out.println("9. " + maskFinancialHealing);
         drawText(g2d, Integer.toString(maskHeartLine), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска линии Сердца
-        System.out.println("10. " + maskHeartLine);
         drawText(g2d, Integer.toString(maskLoveTransmission), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи любви
-        System.out.println("11. " + maskLoveTransmission);
         drawText(g2d, Integer.toString(maskScenarioTransmission), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи сценария
-        System.out.println("12. " + maskScenarioTransmission);
 
         // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
@@ -244,9 +235,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Добавление значения типажа
         drawText(g2d, "Типаж: " + typage, 50, 140, new Font("Arial", Font.BOLD, 20), Color.RED);
+
+        // Добавление значения точки сборки
+        drawText(g2d, "Точка сборки: " + assemblyPoint, 50, 170, new Font("Arial", Font.BOLD, 20), Color.BLUE);
+
+        // Добавление значения инкарнационного профиля
+        drawText(g2d, "Инкарнационный профиль: " + incarnationProfile, 50, 200, new Font("Arial", Font.BOLD, 20), Color.MAGENTA);
     }
 
-    private void drawSmallTrianglesAndText(Graphics2D g2d, int shadow1, int shadow2, int shadow3, int typage) {
+    private void drawSmallTrianglesAndText(Graphics2D g2d, int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile) {
         // Позиции и размеры маленьких треугольников
         int triangleSize = 20;
         int startX = 50;
@@ -270,6 +267,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         startY += 60;
         drawSmallTriangle(g2d, startX + 300, startY - 180, triangleSize, Color.WHITE); // Белый треугольник правее и выше
         drawText(g2d, "Типаж - " + typage, startX + 320, startY - 165, new Font("Arial", Font.PLAIN, 14), Color.BLACK); // Текст сдвинут вместе с треугольником
+
+        // Добавление значения точки сборки
+        drawText(g2d, "Точка сборки - " + assemblyPoint, startX + 30, startY + 90, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+
+        // Добавление значения инкарнационного профиля
+        drawText(g2d, "Инкарнационный профиль - " + incarnationProfile, startX + 30, startY + 110, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
     }
 
     private void drawSmallTriangle(Graphics2D g2d, int x, int y, int size, Color color) {
@@ -333,6 +336,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
 
