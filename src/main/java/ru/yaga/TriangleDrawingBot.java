@@ -6,17 +6,27 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TriangleDrawingBot extends TelegramLongPollingBot {
+
+    private static final String GREETING_FILE_PATH = "greeting.txt";
+    private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
+    private static final String IMAGE_PATH = "pic1.jpg";
+    private int selectedDay;
+    private int selectedMonth;
 
     @Override
     public String getBotUsername() {
@@ -30,27 +40,214 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            long chatId = update.getMessage().getChatId();
+        try {
+            if (update.hasMessage() && update.getMessage().hasText()) {
+                String messageText = update.getMessage().getText();
+                long chatId = update.getMessage().getChatId();
 
-            if (messageText.startsWith("/drawtriangle")) {
-                String[] parts = messageText.split(" ");
-                if (parts.length == 4) {
+                if (messageText.matches("\\d{4}")) {
                     try {
-                        int day = Integer.parseInt(parts[1]);
-                        int month = Integer.parseInt(parts[2]);
-                        int year = Integer.parseInt(parts[3]);
-
-                        BufferedImage image = drawEsotericImage(day, month, year);
-                        sendImage(chatId, image);
-                    } catch (NumberFormatException | IOException | TelegramApiException e) {
+                        int year = Integer.parseInt(messageText);
+                        if (year < 1000 || year > 9999) {
+                            sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
+                        } else {
+                            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, year);
+                            sendImage(chatId, image);
+                            showResultButtons(chatId);
+                        }
+                    } catch (NumberFormatException e) {
+                        sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
+                    } catch (IOException | TelegramApiException e) {
                         e.printStackTrace();
-                        sendMessage(chatId, "Произошла ошибка при обработке вашей команды. Убедитесь, что вы ввели правильный формат даты.");
+                        sendMessage(chatId, "Произошла ошибка при обработке вашей команды. Пожалуйста, попробуйте снова.");
                     }
-                } else {
-                    sendMessage(chatId, "Неверный формат команды. Используйте /drawtriangle day month year");
+                } else if (messageText.equals("/start")) {
+                    sendGreeting(chatId);
                 }
+            } else if (update.hasCallbackQuery()) {
+                String callbackData = update.getCallbackQuery().getData();
+                long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+                if (callbackData.startsWith("date:day:")) {
+                    selectedDay = Integer.parseInt(callbackData.split(":")[2]);
+                    showMonthPicker(chatId);
+                } else if (callbackData.startsWith("date:month:")) {
+                    selectedMonth = Integer.parseInt(callbackData.split(":")[2]);
+                    promptYearInput(chatId);
+                } else {
+                    switch (callbackData) {
+                        case "register":
+                            sendMessage(chatId, "Регистрация в боте...");
+                            break;
+                        case "calculator":
+                            showDayPicker(chatId);
+                            break;
+                        case "reminder":
+                            sendMessage(chatId, "Памятка по работе с ботом...");
+                            break;
+                        case "support":
+                            sendMessage(chatId, "Обращение в службу поддержки...");
+                            break;
+                        case "new_date":
+                            showDayPicker(chatId);
+                            break;
+                        case "description":
+                            sendMessage(chatId, "Получить описание еще не реализовано.");
+                            break;
+                        case "back":
+                            sendGreeting(chatId);
+                            break;
+                    }
+                }
+            }
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendGreeting(long chatId) {
+        try {
+            String greeting = new String(Files.readAllBytes(Paths.get(GREETING_FILE_PATH)));
+            sendMessage(chatId, greeting);
+
+            // Отправка изображения
+            sendImage(chatId, new File(IMAGE_PATH));
+
+            // Отправка кнопок
+            sendButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить приветственное сообщение.");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось отправить изображение.");
+        }
+    }
+
+    private void sendButtons(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        rowInline1.add(InlineKeyboardButton.builder().text("Зарегистрироваться в боте").callbackData("register").build());
+
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        rowInline2.add(InlineKeyboardButton.builder().text("Запуск калькулятора").callbackData("calculator").build());
+
+        List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
+        rowInline3.add(InlineKeyboardButton.builder().text("Памятка").callbackData("reminder").build());
+
+        List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
+        rowInline4.add(InlineKeyboardButton.builder().text("Обращение в службу поддержки").callbackData("support").build());
+
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+        rowsInline.add(rowInline3);
+        rowsInline.add(rowInline4);
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите действие:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
+    private void showDayPicker(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            List<InlineKeyboardButton> rowInline = new ArrayList<>();
+            for (int j = 1; j <= 7; j++) {
+                int day = i * 7 + j;
+                if (day <= 31) {
+                    rowInline.add(InlineKeyboardButton.builder()
+                            .text(String.valueOf(day))
+                            .callbackData("date:day:" + day)
+                            .build());
+                }
+            }
+            rowsInline.add(rowInline);
+        }
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите день:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
+    private void showMonthPicker(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        for (int i = 1; i <= 12; i += 4) {
+            List<InlineKeyboardButton> rowInline = new ArrayList<>();
+            for (int j = i; j < i + 4 && j <= 12; j++) {
+                rowInline.add(InlineKeyboardButton.builder()
+                        .text(String.valueOf(j))
+                        .callbackData("date:month:" + j)
+                        .build());
+            }
+            rowsInline.add(rowInline);
+        }
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите месяц:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
+    private void promptYearInput(long chatId) throws TelegramApiException {
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Теперь введите год в формате: YYYY")
+                .build();
+        execute(message);
+    }
+
+    private void showResultButtons(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        rowInline1.add(InlineKeyboardButton.builder().text("Ввести новую дату рождения").callbackData("new_date").build());
+
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        rowInline2.add(InlineKeyboardButton.builder().text("Получить описание").callbackData("description").build());
+
+        List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
+        rowInline3.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
+
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+        rowsInline.add(rowInline3);
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите дальнейшее действие:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
+    private void createGreetingFileIfNotExists() throws IOException {
+        File file = new File(GREETING_FILE_PATH);
+        if (!file.exists()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write(GREETING_MESSAGE);
             }
         }
     }
@@ -299,10 +496,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
+    private void sendImage(long chatId, File imageFile) throws TelegramApiException {
+        SendPhoto msg = new SendPhoto();
+        msg.setChatId(String.valueOf(chatId));
+        msg.setPhoto(new InputFile(imageFile));
+        execute(msg);
+    }
+
     private void sendMessage(long chatId, String text) {
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText(text);
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text(text)
+                .build();
 
         try {
             execute(message);
@@ -314,12 +519,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     public static void main(String[] args) {
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            botsApi.registerBot(new TriangleDrawingBot());
-        } catch (TelegramApiException e) {
+            TriangleDrawingBot bot = new TriangleDrawingBot();
+            bot.createGreetingFileIfNotExists();
+            botsApi.registerBot(bot);
+        } catch (TelegramApiException | IOException e) {
             e.printStackTrace();
         }
     }
 }
+
+
+
+
 
 
 
