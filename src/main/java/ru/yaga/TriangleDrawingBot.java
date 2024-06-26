@@ -114,24 +114,39 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Расчет значений вершин
         int alterEgo = applyMinus22Rule(day);  // Альтер-Эго: применяем закон минус 22 к дню рождения
+        System.out.println("25. " + alterEgo);
         int destinyKey = month;  // Ключ реализации Предназначения: месяц рождения
+        System.out.println("26. " + destinyKey);
         int talentKey = sumOfDigits(year);  // Ключ реализации Таланта: сумма цифр года рождения с применением закона минус 22
+        System.out.println("27. " + talentKey);
 
         // Расчет значений для центров
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
+        System.out.println("13. " + centerPersonality);
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
+        System.out.println("14. " + centerDestiny);
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
+        System.out.println("15. " + centerFamilyPrograms);
 
         // Расчет значений для масок
         int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
+        System.out.println("16. " + maskLoveScenario);
         int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
+        System.out.println("17. " + maskTalentRealization);
         int maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
+        System.out.println("18. " + maskKarmicTask);
         int maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
+        System.out.println("19. " + maskHealingLoveScenario);
         int maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
+        System.out.println("20. " + maskKarmicDestiny);
         int maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
+        System.out.println("21. " + maskFinancialHealing);
         int maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
+        System.out.println("22. " + maskHeartLine);
         int maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
+        System.out.println("23. " + maskLoveTransmission);
         int maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
+        System.out.println("24. " + maskScenarioTransmission);
 
         // Новые расчеты для теней и типажа
         int shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
@@ -174,19 +189,31 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         // Добавление значений центров
         drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Личности
+        System.out.println("1. " + centerPersonality);
         drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
+        System.out.println("2. " + centerDestiny);
         drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
+        System.out.println("3. " + centerDestiny);
 
         // Добавление значений масок
         drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Любовного сценария
+        System.out.println("4. " + maskLoveScenario);
         drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска реализации Таланта
+        System.out.println("5. " + maskTalentRealization);
         drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармической задачи
+        System.out.println("6. " + maskKarmicTask);
         drawText(g2d, Integer.toString(maskHealingLoveScenario), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления любовного сценария
+        System.out.println("7. " + maskHealingLoveScenario);
         drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармического Предназначения
+        System.out.println("8. " + maskKarmicDestiny);
         drawText(g2d, Integer.toString(maskFinancialHealing), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления денежного сценария
+        System.out.println("9. " + maskFinancialHealing);
         drawText(g2d, Integer.toString(maskHeartLine), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска линии Сердца
+        System.out.println("10. " + maskHeartLine);
         drawText(g2d, Integer.toString(maskLoveTransmission), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи любви
+        System.out.println("11. " + maskLoveTransmission);
         drawText(g2d, Integer.toString(maskScenarioTransmission), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи сценария
+        System.out.println("12. " + maskScenarioTransmission);
 
         // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
