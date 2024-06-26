@@ -34,7 +34,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
-            // Пример обработки команды для рисования треугольника
             if (messageText.startsWith("/drawtriangle")) {
                 String[] parts = messageText.split(" ");
                 if (parts.length == 4) {
@@ -69,7 +68,20 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             sum += number % 10;
             number /= 10;
         }
+        return sum;
+    }
+
+    private int calculateResource(int day, int month, int year) {
+        int sum = sumOfDigits(day) + sumOfDigits(month) + sumOfDigits(year);
         return applyMinus22Rule(sum);
+    }
+
+    private int calculateQuest(int day, int month, int year) {
+        int sum = sumOfDigits(day) + sumOfDigits(month) + sumOfDigits(year);
+        while (sum > 22) {
+            sum = sumOfDigits(sum);
+        }
+        return sum;
     }
 
     private int calculateSoulKey(int value1, int value2) {
@@ -87,24 +99,20 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return applyMinus22Rule(sum);
     }
 
-    // Метод для расчета типажа с учетом правила вычитания 22
     public int calculateTypage(int shadow1, int shadow2, int shadow3) {
         int sum = calculateShadowsSum(shadow1, shadow2, shadow3);
         return applyMinus22Rule(sum);
     }
 
-    // Метод для вычисления суммы теней
     private int calculateShadowsSum(int shadow1, int shadow2, int shadow3) {
         return shadow1 + shadow2 + shadow3;
     }
 
-    // Метод для вычисления точки сборки
     private int calculateAssemblyPoint(int destinyKey, int talentKey, int centerFamilyPrograms, int centerPersonality, int centerDestiny) {
         int sum = destinyKey + talentKey + centerFamilyPrograms + centerPersonality + centerDestiny;
         return applyMinus22Rule(sum);
     }
 
-    // Метод для вычисления инкарнационного профиля
     private int calculateIncarnationProfile(int shadow1, int shadow2, int shadow3, int typage) {
         int sum = shadow1 + shadow2 + shadow3 + typage;
         return applyMinus22Rule(sum);
@@ -116,25 +124,20 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = image.createGraphics();
 
-        // Рисуем фон
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, width, height);
 
-        // Настройки пера
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2));
 
-        // Расчет значений вершин
-        int alterEgo = applyMinus22Rule(day);  // Альтер-Эго: применяем закон минус 22 к дню рождения
-        int destinyKey = month;  // Ключ реализации Предназначения: месяц рождения
-        int talentKey = sumOfDigits(year);  // Ключ реализации Таланта: сумма цифр года рождения с применением закона минус 22
+        int alterEgo = applyMinus22Rule(day);
+        int destinyKey = month;
+        int talentKey = sumOfDigits(year);
 
-        // Расчет значений для центров
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
 
-        // Расчет значений для масок
         int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
         int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
         int maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
@@ -145,25 +148,22 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
         int maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
 
-        // Новые расчеты для теней и типажа
         int shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
         int shadow2 = calculateShadow(maskTalentRealization, maskHeartLine, maskScenarioTransmission);
         int shadow3 = calculateShadow(maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing);
         int typage = calculateTypage(shadow1, shadow2, shadow3);
 
-        // Расчет точки сборки
         int assemblyPoint = calculateAssemblyPoint(destinyKey, talentKey, centerFamilyPrograms, centerPersonality, centerDestiny);
-
-        // Расчет инкарнационного профиля
         int incarnationProfile = calculateIncarnationProfile(shadow1, shadow2, shadow3, typage);
 
-        // Логика рисования треугольников и других элементов
+        int resource = calculateResource(day, month, year);
+        int quest = calculateQuest(day, month, year);
+
         drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms,
                 maskLoveScenario, maskTalentRealization, maskKarmicTask, maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing, maskHeartLine, maskLoveTransmission, maskScenarioTransmission,
-                shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile);
+                shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile, resource, quest);
 
-        // Добавление маленьких треугольников и подписей
-        drawSmallTrianglesAndText(g2d, shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile);
+        drawSmallTrianglesAndText(g2d, shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile, resource, quest);
 
         g2d.dispose();
         return image;
@@ -171,53 +171,44 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey, int centerPersonality, int centerDestiny, int centerFamilyPrograms,
                                           int maskLoveScenario, int maskTalentRealization, int maskKarmicTask, int maskHealingLoveScenario, int maskKarmicDestiny, int maskFinancialHealing, int maskHeartLine, int maskLoveTransmission, int maskScenarioTransmission,
-                                          int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile) {
-        // Координаты точек треугольника
+                                          int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile, int resource, int quest) {
         int[] xPoints = {400, 100, 700};
         int[] yPoints = {100, 700, 700};
 
-        // Рисуем большой внешний треугольник
         drawTriangle(g2d, xPoints[0], yPoints[0], xPoints[1], yPoints[1], xPoints[2], yPoints[2], Color.GRAY, 2);
 
-        // Внутренние треугольники
-        drawTriangle(g2d, 400, 100, 250, 400, 550, 400, new Color(255, 0, 255), 2); // Верхний треугольник (ярко-розовый)
-        drawTriangle(g2d, 250, 400, 100, 700, 400, 700, new Color(0, 255, 0), 2); // Левый нижний треугольник (ярко-зеленый)
-        drawTriangle(g2d, 550, 400, 400, 700, 700, 700, new Color(128, 0, 128), 2); // Правый нижний треугольник (ярко-фиолетовый)
-        drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2); // Центральный треугольник (белый)
+        drawTriangle(g2d, 400, 100, 250, 400, 550, 400, new Color(255, 0, 255), 2);
+        drawTriangle(g2d, 250, 400, 100, 700, 400, 700, new Color(0, 255, 0), 2);
+        drawTriangle(g2d, 550, 400, 400, 700, 700, 700, new Color(128, 0, 128), 2);
+        drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2);
 
-        // Добавление текста и номеров
-        drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);  // Верхняя точка
-        drawText(g2d, Integer.toString(destinyKey), 705, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Правая нижняя точка
-        drawText(g2d, Integer.toString(talentKey), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Левая нижняя точка
+        drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(destinyKey), 705, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(talentKey), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK);
 
-        // Добавление значений центров
-        drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Личности
-        drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Предназначения
-        drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Центр Родовых Программ
+        drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK);
 
-        // Добавление значений масок
-        drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Любовного сценария
-        drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска реализации Таланта
-        drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармической задачи
-        drawText(g2d, Integer.toString(maskHealingLoveScenario), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления любовного сценария
-        drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Кармического Предназначения
-        drawText(g2d, Integer.toString(maskFinancialHealing), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска Исцеления денежного сценария
-        drawText(g2d, Integer.toString(maskHeartLine), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска линии Сердца
-        drawText(g2d, Integer.toString(maskLoveTransmission), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи любви
-        drawText(g2d, Integer.toString(maskScenarioTransmission), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK); // Маска передачи сценария
+        drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskHealingLoveScenario), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskFinancialHealing), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskHeartLine), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskLoveTransmission), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(maskScenarioTransmission), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK);
 
-        // Подписи
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Ключ реализации", 690, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Предназначения", 690, 735, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Ключ реализации Таланта", 70, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
 
-        // Подписи для центров
         drawText(g2d, "Центр Личности", 140, 410, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Центр Предназначения", 560, 415, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Центр Родовых Программ", 390, 735, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
 
-        // Подписи для масок
         drawText(g2d, "Маска Любовного сценария", 150, 255, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска реализации Таланта", 40, 520, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска Кармической задачи", 490, 255, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
@@ -228,51 +219,44 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Маска передачи любви", 350, 393, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска передачи сценария", 190, 695, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
 
-        // Добавление значений теней
         drawText(g2d, "1-я Тень: " + shadow1, 50, 50, new Font("Arial", Font.BOLD, 20), Color.RED);
         drawText(g2d, "2-я Тень: " + shadow2, 50, 80, new Font("Arial", Font.BOLD, 20), Color.RED);
         drawText(g2d, "3-я Тень: " + shadow3, 50, 110, new Font("Arial", Font.BOLD, 20), Color.RED);
 
-        // Добавление значения типажа
         drawText(g2d, "Типаж: " + typage, 50, 140, new Font("Arial", Font.BOLD, 20), Color.RED);
-
-        // Добавление значения точки сборки
         drawText(g2d, "Точка сборки: " + assemblyPoint, 50, 170, new Font("Arial", Font.BOLD, 20), Color.BLUE);
-
-        // Добавление значения инкарнационного профиля
         drawText(g2d, "Инкарнационный профиль: " + incarnationProfile, 50, 200, new Font("Arial", Font.BOLD, 20), Color.MAGENTA);
+        drawText(g2d, "Ресурс: " + resource, 50, 230, new Font("Arial", Font.BOLD, 20), Color.GREEN);
+        drawText(g2d, "Квест: " + quest, 50, 260, new Font("Arial", Font.BOLD, 20), Color.ORANGE);
     }
 
-    private void drawSmallTrianglesAndText(Graphics2D g2d, int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile) {
-        // Позиции и размеры маленьких треугольников
+    private void drawSmallTrianglesAndText(Graphics2D g2d, int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile, int resource, int quest) {
         int triangleSize = 20;
         int startX = 50;
         int startY = 750;
 
-        // Рисуем маленькие треугольники и добавляем текст рядом
-        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(255, 0, 255)); // Розовый треугольник
+        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(255, 0, 255));
         drawText(g2d, "Любовь/Отношения/Коммуникации", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
         drawText(g2d, "1-я Тень - " + shadow1, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
-        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(0, 255, 0)); // Зеленый треугольник
+        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(0, 255, 0));
         drawText(g2d, "Деньги/Карьера", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
         drawText(g2d, "2-я Тень - " + shadow2, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
-        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(128, 0, 128)); // Фиолетовый треугольник
+        drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(128, 0, 128));
         drawText(g2d, "Предназначение/Кармическая задача", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
         drawText(g2d, "3-я Тень - " + shadow3, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
-        drawSmallTriangle(g2d, startX + 300, startY - 180, triangleSize, Color.WHITE); // Белый треугольник правее и выше
-        drawText(g2d, "Типаж - " + typage, startX + 320, startY - 165, new Font("Arial", Font.PLAIN, 14), Color.BLACK); // Текст сдвинут вместе с треугольником
+        drawSmallTriangle(g2d, startX + 300, startY - 180, triangleSize, Color.WHITE);
+        drawText(g2d, "Типаж - " + typage, startX + 320, startY - 165, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
-        // Добавление значения точки сборки
         drawText(g2d, "Точка сборки - " + assemblyPoint, startX + 30, startY + 90, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-
-        // Добавление значения инкарнационного профиля
         drawText(g2d, "Инкарнационный профиль - " + incarnationProfile, startX + 30, startY + 110, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Ресурс - " + resource, startX + 30, startY + 130, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Квест - " + quest, startX + 30, startY + 150, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
     }
 
     private void drawSmallTriangle(Graphics2D g2d, int x, int y, int size, Color color) {
