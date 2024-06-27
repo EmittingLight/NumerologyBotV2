@@ -23,6 +23,8 @@ import java.util.List;
 public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private static final String GREETING_FILE_PATH = "greeting.txt";
+    private static final String REMINDER_FILE_PATH = "reminder.txt";
+    private static final String SUPPORT_FILE_PATH = "support.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -83,10 +85,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             showDayPicker(chatId);
                             break;
                         case "reminder":
-                            sendMessage(chatId, "Памятка по работе с ботом...");
+                            sendReminder(chatId);
                             break;
                         case "support":
-                            sendMessage(chatId, "Обращение в службу поддержки...");
+                            sendSupport(chatId);
                             break;
                         case "new_date":
                             showDayPicker(chatId);
@@ -121,6 +123,34 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
             sendMessage(chatId, "Не удалось отправить изображение.");
+        }
+    }
+
+    private void sendReminder(long chatId) {
+        try {
+            String reminder = new String(Files.readAllBytes(Paths.get(REMINDER_FILE_PATH)));
+            sendMessage(chatId, reminder);
+            sendBackButton(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить текст памятки.");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось отправить кнопку.");
+        }
+    }
+
+    private void sendSupport(long chatId) {
+        try {
+            String support = new String(Files.readAllBytes(Paths.get(SUPPORT_FILE_PATH)));
+            sendMessage(chatId, support);
+            sendBackButton(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить текст обращения в службу поддержки.");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось отправить кнопку.");
         }
     }
 
@@ -224,7 +254,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         rowInline1.add(InlineKeyboardButton.builder().text("Ввести новую дату рождения").callbackData("new_date").build());
 
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
-        rowInline2.add(InlineKeyboardButton.builder().text("Получить описание").callbackData("description").build());
+        rowInline2.add(InlineKeyboardButton.builder().text("Получить расшифровку").callbackData("description").build());
 
         List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
         rowInline3.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
@@ -238,6 +268,25 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         SendMessage message = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
                 .text("Выберите дальнейшее действие:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
+    private void sendBackButton(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        rowInline1.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
+
+        rowsInline.add(rowInline1);
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите действие:")
                 .replyMarkup(inlineKeyboardMarkup)
                 .build();
         execute(message);
@@ -527,6 +576,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
+
 
 
 
