@@ -25,10 +25,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String GREETING_FILE_PATH = "greeting.txt";
     private static final String REMINDER_FILE_PATH = "reminder.txt";
     private static final String SUPPORT_FILE_PATH = "support.txt";
+    private static final String DESCRIPTION_FILE_PATH = "alterEgo.txt"; // путь к файлу с описанием
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
     private int selectedMonth;
+    private int alterEgo; // переменная для хранения значения alterEgo
 
     @Override
     public String getBotUsername() {
@@ -94,7 +96,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             showDayPicker(chatId);
                             break;
                         case "description":
-                            sendMessage(chatId, "Получить описание еще не реализовано.");
+                            sendDescription(chatId);
                             break;
                         case "back":
                             sendGreeting(chatId);
@@ -152,6 +154,30 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             e.printStackTrace();
             sendMessage(chatId, "Не удалось отправить кнопку.");
         }
+    }
+
+    private void sendDescription(long chatId) {
+        try {
+            String description = getDescription(alterEgo);
+            sendMessage(chatId, description);
+            sendBackButton(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание.");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось отправить кнопку.");
+        }
+    }
+
+    private String getDescription(int alterEgo) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(DESCRIPTION_FILE_PATH));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(alterEgo))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено.";
     }
 
     private void sendButtons(long chatId) throws TelegramApiException {
@@ -254,7 +280,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         rowInline1.add(InlineKeyboardButton.builder().text("Ввести новую дату рождения").callbackData("new_date").build());
 
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
-        rowInline2.add(InlineKeyboardButton.builder().text("Получить расшифровку").callbackData("description").build());
+        rowInline2.add(InlineKeyboardButton.builder().text("Получить расшифровку Альтер-Эго").callbackData("description").build());
 
         List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
         rowInline3.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
@@ -377,6 +403,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setStroke(new BasicStroke(2));
 
         int alterEgo = applyMinus22Rule(day);
+        this.alterEgo = alterEgo; // сохранить значение alterEgo для использования в описании
         int destinyKey = month;
         int talentKey = sumOfDigits(year);
 
