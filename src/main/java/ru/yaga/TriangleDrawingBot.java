@@ -31,6 +31,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
     private int selectedMonth;
+    private int selectedYear;
     private int alterEgo;
     private int centerPersonality;
 
@@ -53,11 +54,11 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
                 if (messageText.matches("\\d{4}")) {
                     try {
-                        int year = Integer.parseInt(messageText);
-                        if (year < 1000 || year > 9999) {
+                        selectedYear = Integer.parseInt(messageText);
+                        if (selectedYear < 1000 || selectedYear > 9999) {
                             sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                         } else {
-                            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, year);
+                            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
                             sendImage(chatId, image);
                             showResultButtons(chatId);
                         }
@@ -166,7 +167,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void sendDescription(long chatId, int key, String filePath) {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, 0);
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
 
             String description = getDescription(key, filePath);
@@ -348,12 +349,16 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         rowInline6.add(InlineKeyboardButton.builder().text("Места Силы").callbackData("places_of_power_description").build());
         rowInline6.add(InlineKeyboardButton.builder().text("Эзотерические способности").callbackData("esoteric_abilities_description").build());
 
+        List<InlineKeyboardButton> rowInline7 = new ArrayList<>();
+        rowInline7.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
+
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
         rowsInline.add(rowInline3);
         rowsInline.add(rowInline4);
         rowsInline.add(rowInline5);
         rowsInline.add(rowInline6);
+        rowsInline.add(rowInline7);
 
         inlineKeyboardMarkup.setKeyboard(rowsInline);
 
@@ -670,7 +675,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
 
 
 
