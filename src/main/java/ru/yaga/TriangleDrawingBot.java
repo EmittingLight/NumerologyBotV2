@@ -101,16 +101,16 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             showDayPicker(chatId);
                             break;
                         case "alter_ego_description":
-                            sendDescription(chatId, alterEgo, DESCRIPTION_FILE_PATH);
+                            sendDescription(chatId, alterEgo, DESCRIPTION_FILE_PATH, "Альтер-Эго");
                             break;
                         case "personality_description":
-                            sendDescription(chatId, centerPersonality, PERSONALITY_DESCRIPTION_FILE_PATH);
+                            sendDescription(chatId, centerPersonality, PERSONALITY_DESCRIPTION_FILE_PATH, "Центр Личности");
                             break;
                         case "back":
                             sendGreeting(chatId);
                             break;
                         default:
-                            sendDescription(chatId, Integer.parseInt(callbackData.split("_")[0]), callbackData.split("_")[1] + ".txt");
+                            sendDescription(chatId, Integer.parseInt(callbackData.split("_")[0]), callbackData.split("_")[1] + ".txt", callbackData);
                             break;
                     }
                 }
@@ -165,13 +165,14 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendDescription(long chatId, int key, String filePath) {
+    private void sendDescription(long chatId, int key, String filePath, String buttonName) {
         try {
             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
 
             String description = getDescription(key, filePath);
-            sendMessage(chatId, description);
+            String formattedDescription = formatDescription(description, buttonName);
+            sendMessage(chatId, formattedDescription);
             showDescriptionButtons(chatId);
         } catch (IOException e) {
             e.printStackTrace();
@@ -190,6 +191,21 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             }
         }
         return "Описание не найдено.";
+    }
+
+    private String formatDescription(String description, String buttonName) {
+        StringBuilder formattedDescription = new StringBuilder();
+        formattedDescription.append(buttonName)
+                .append(" для даты рождения ")
+                .append(String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear))
+                .append("\n\n");
+
+        String[] lines = description.split("(?=[+\\-*])");
+        for (String line : lines) {
+            formattedDescription.append(line.trim()).append("\n\n");
+        }
+
+        return formattedDescription.toString();
     }
 
     private void sendButtons(long chatId) throws TelegramApiException {
