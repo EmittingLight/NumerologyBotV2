@@ -80,6 +80,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 } else if (callbackData.startsWith("date:month:")) {
                     selectedMonth = Integer.parseInt(callbackData.split(":")[2]);
                     promptYearInput(chatId);
+                } else if (callbackData.equals("description")) {
+                    showDescriptionButtons(chatId);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -97,7 +99,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         case "new_date":
                             showDayPicker(chatId);
                             break;
-                        case "description":
+                        case "alter_ego_description":
                             sendDescription(chatId, alterEgo, DESCRIPTION_FILE_PATH);
                             break;
                         case "personality_description":
@@ -105,6 +107,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             break;
                         case "back":
                             sendGreeting(chatId);
+                            break;
+                        default:
+                            sendDescription(chatId, Integer.parseInt(callbackData.split("_")[0]), callbackData.split("_")[1] + ".txt");
                             break;
                     }
                 }
@@ -166,7 +171,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
             String description = getDescription(key, filePath);
             sendMessage(chatId, description);
-            sendBackButton(chatId);
+            showDescriptionButtons(chatId);
         } catch (IOException e) {
             e.printStackTrace();
             sendMessage(chatId, "Не удалось загрузить описание.");
@@ -286,18 +291,69 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         rowInline1.add(InlineKeyboardButton.builder().text("Ввести новую дату рождения").callbackData("new_date").build());
 
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
-        rowInline2.add(InlineKeyboardButton.builder().text("Получить расшифровку Альтер-Эго").callbackData("description").build());
+        rowInline2.add(InlineKeyboardButton.builder().text("Получить расшифровку").callbackData("description").build());
 
         List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
-        rowInline3.add(InlineKeyboardButton.builder().text("Получить расшифровку Центр Личности").callbackData("personality_description").build());
+        rowInline3.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
+
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+        rowsInline.add(rowInline3);
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите дальнейшее действие:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
+    private void showDescriptionButtons(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        rowInline1.add(InlineKeyboardButton.builder().text("Альтер-Эго").callbackData("alter_ego_description").build());
+        rowInline1.add(InlineKeyboardButton.builder().text("Центр Личности").callbackData("personality_description").build());
+        rowInline1.add(InlineKeyboardButton.builder().text("Центр Предназначения").callbackData("center_destiny_description").build());
+        rowInline1.add(InlineKeyboardButton.builder().text("Центр Родовых Программ").callbackData("center_family_programs_description").build());
+
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        rowInline2.add(InlineKeyboardButton.builder().text("Ключ реализации Предназначения").callbackData("key_destiny_realization").build());
+        rowInline2.add(InlineKeyboardButton.builder().text("Ключ реализации Таланта").callbackData("key_talent_realization").build());
+        rowInline2.add(InlineKeyboardButton.builder().text("Тень 1").callbackData("shadow1_description").build());
+        rowInline2.add(InlineKeyboardButton.builder().text("Тень 2").callbackData("shadow2_description").build());
+
+        List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
+        rowInline3.add(InlineKeyboardButton.builder().text("Тень 3").callbackData("shadow3_description").build());
+        rowInline3.add(InlineKeyboardButton.builder().text("Типаж").callbackData("typage_description").build());
+        rowInline3.add(InlineKeyboardButton.builder().text("Маски 🔴").callbackData("masks_red_description").build());
+        rowInline3.add(InlineKeyboardButton.builder().text("Маски 🟢").callbackData("masks_green_description").build());
 
         List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
-        rowInline4.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
+        rowInline4.add(InlineKeyboardButton.builder().text("Маски 🟣").callbackData("masks_purple_description").build());
+        rowInline4.add(InlineKeyboardButton.builder().text("Точка Сборки").callbackData("assembly_point_description").build());
+        rowInline4.add(InlineKeyboardButton.builder().text("Инкарнационный профиль").callbackData("incarnation_profile_description").build());
+        rowInline4.add(InlineKeyboardButton.builder().text("Ресурс").callbackData("resource_description").build());
+
+        List<InlineKeyboardButton> rowInline5 = new ArrayList<>();
+        rowInline5.add(InlineKeyboardButton.builder().text("Квест").callbackData("quest_description").build());
+        rowInline5.add(InlineKeyboardButton.builder().text("Арканы-Планеты").callbackData("arcanes_planets_description").build());
+        rowInline5.add(InlineKeyboardButton.builder().text("Заболевания").callbackData("diseases_description").build());
+        rowInline5.add(InlineKeyboardButton.builder().text("Таланты").callbackData("talents_description").build());
+
+        List<InlineKeyboardButton> rowInline6 = new ArrayList<>();
+        rowInline6.add(InlineKeyboardButton.builder().text("Места Силы").callbackData("places_of_power_description").build());
+        rowInline6.add(InlineKeyboardButton.builder().text("Эзотерические способности").callbackData("esoteric_abilities_description").build());
 
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
         rowsInline.add(rowInline3);
         rowsInline.add(rowInline4);
+        rowsInline.add(rowInline5);
+        rowsInline.add(rowInline6);
 
         inlineKeyboardMarkup.setKeyboard(rowsInline);
 
@@ -614,6 +670,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
 
