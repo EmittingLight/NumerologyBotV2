@@ -30,7 +30,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String DESTINATION_CENTER_FILE_PATH = "destinationCenter.txt";
     private static final String CENTER_FAMILY_PROGRAMS_FILE_PATH = "centerFamilyPrograms.txt";
     private static final String KEY_DESTINY_REALIZATION_FILE_PATH = "keydestinyrealization.txt";
-    private static final String TALENT_KEY_REALIZATION_FILE_PATH = "talentKey.txt"; // Добавлен файл ключей таланта
+    private static final String TALENT_KEY_REALIZATION_FILE_PATH = "talentKey.txt";
+    private static final String MASKS_RED_DESCRIPTION_FILE_PATH = "masksreddescription.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -41,7 +42,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int centerDestiny;
     private int centerFamilyPrograms;
     private int destinyKey;
-    private int talentKey; // Добавлен талант ключ
+    private int talentKey;
+    private int maskLoveScenario;
+    private int maskKarmicTask;
+    private int maskLoveTransmission;
 
     @Override
     public String getBotUsername() {
@@ -93,6 +97,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     promptYearInput(chatId, "Теперь введите год в формате: YYYY");
                 } else if (callbackData.equals("description")) {
                     showDescriptionButtons(chatId);
+                } else if (callbackData.equals("masks_red_description")) {
+                    handleMaskRedDescription(chatId);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -125,7 +131,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         case "key_destiny_realization":
                             sendKeyDestinyRealizationDescription(chatId, destinyKey, KEY_DESTINY_REALIZATION_FILE_PATH, "Ключ Реализации Предназначения");
                             break;
-                        case "key_talent_realization": // Добавлен случай обработки нажатия кнопки
+                        case "key_talent_realization":
                             sendKeyTalentRealizationDescription(chatId, talentKey, TALENT_KEY_REALIZATION_FILE_PATH, "Ключ Реализации Таланта");
                             break;
                         case "back":
@@ -141,6 +147,42 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             e.printStackTrace();
             sendMessage(update.getMessage().getChatId(), "Произошла ошибка при обработке вашей команды. Пожалуйста, попробуйте снова.");
         }
+    }
+
+    private void handleMaskRedDescription(long chatId) throws TelegramApiException {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String maskDescription = getMaskDescription(maskLoveScenario) + "\n\n" +
+                    getMaskDescription(maskKarmicTask) + "\n\n" +
+                    getMaskDescription(maskLoveTransmission);
+
+            sendLongMessage(chatId, maskDescription);
+
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание масок.");
+        }
+    }
+
+    private void sendLongMessage(long chatId, String text) throws TelegramApiException {
+        int maxMessageLength = 4096;
+        for (int i = 0; i < text.length(); i += maxMessageLength) {
+            int end = Math.min(text.length(), i + maxMessageLength);
+            sendMessage(chatId, text.substring(i, end));
+        }
+    }
+
+    private String getMaskDescription(int maskValue) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(MASKS_RED_DESCRIPTION_FILE_PATH));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(maskValue))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено для значения: " + maskValue;
     }
 
     private void sendGreeting(long chatId) {
@@ -408,14 +450,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
-        // Список всех кнопок
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         buttons.add(InlineKeyboardButton.builder().text("Альтер-Эго").callbackData("alter_ego_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Центр Личности").callbackData("personality_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Центр Предназначения").callbackData("center_destiny_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Центр Родовых Программ").callbackData("center_family_programs_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Ключ реализации Предназначения").callbackData("key_destiny_realization").build());
-        buttons.add(InlineKeyboardButton.builder().text("Ключ реализации Таланта").callbackData("key_talent_realization").build()); // Добавлена кнопка Ключ реализации Таланта
+        buttons.add(InlineKeyboardButton.builder().text("Ключ реализации Таланта").callbackData("key_talent_realization").build());
         buttons.add(InlineKeyboardButton.builder().text("Тень 1").callbackData("shadow1_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Тень 2").callbackData("shadow2_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Тень 3").callbackData("shadow3_description").build());
@@ -434,7 +475,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         buttons.add(InlineKeyboardButton.builder().text("Эзотерические способности").callbackData("esoteric_abilities_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
 
-        // Разделение кнопок на строки по 3 кнопки
         for (int i = 0; i < buttons.size(); i += 3) {
             List<InlineKeyboardButton> rowInline = new ArrayList<>();
             for (int j = 0; j < 3; j++) {
@@ -572,14 +612,14 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
         this.centerFamilyPrograms = centerFamilyPrograms;
 
-        int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
+        maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
         int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
-        int maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
+        maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
         int maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
         int maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
         int maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
         int maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
-        int maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
+        maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
         int maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
 
         int shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
@@ -764,3 +804,4 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
