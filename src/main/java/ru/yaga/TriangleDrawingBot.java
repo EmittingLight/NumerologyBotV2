@@ -30,6 +30,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String DESTINATION_CENTER_FILE_PATH = "destinationCenter.txt";
     private static final String CENTER_FAMILY_PROGRAMS_FILE_PATH = "centerFamilyPrograms.txt";
     private static final String KEY_DESTINY_REALIZATION_FILE_PATH = "keydestinyrealization.txt";
+    private static final String TALENT_KEY_REALIZATION_FILE_PATH = "talentKey.txt"; // Добавлен файл ключей таланта
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -40,6 +41,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int centerDestiny;
     private int centerFamilyPrograms;
     private int destinyKey;
+    private int talentKey; // Добавлен талант ключ
 
     @Override
     public String getBotUsername() {
@@ -123,6 +125,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         case "key_destiny_realization":
                             sendKeyDestinyRealizationDescription(chatId, destinyKey, KEY_DESTINY_REALIZATION_FILE_PATH, "Ключ Реализации Предназначения");
                             break;
+                        case "key_talent_realization": // Добавлен случай обработки нажатия кнопки
+                            sendKeyTalentRealizationDescription(chatId, talentKey, TALENT_KEY_REALIZATION_FILE_PATH, "Ключ Реализации Таланта");
+                            break;
                         case "back":
                             sendGreeting(chatId);
                             break;
@@ -202,6 +207,28 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     }
 
     private void sendKeyDestinyRealizationDescription(long chatId, int key, String filePath, String buttonName) {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            if (isKeyInFile(key, filePath)) {
+                String description = getDescription(key, filePath);
+                String formattedDescription = formatDescription(description, buttonName);
+                sendMessage(chatId, formattedDescription);
+            } else {
+                sendMessage(chatId, "Описание для данного ключа не найдено.");
+            }
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание.");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось отправить кнопку.");
+        }
+    }
+
+    private void sendKeyTalentRealizationDescription(long chatId, int key, String filePath, String buttonName) {
         try {
             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
@@ -388,7 +415,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         buttons.add(InlineKeyboardButton.builder().text("Центр Предназначения").callbackData("center_destiny_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Центр Родовых Программ").callbackData("center_family_programs_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Ключ реализации Предназначения").callbackData("key_destiny_realization").build());
-        buttons.add(InlineKeyboardButton.builder().text("Ключ реализации Таланта").callbackData("key_talent_realization").build());
+        buttons.add(InlineKeyboardButton.builder().text("Ключ реализации Таланта").callbackData("key_talent_realization").build()); // Добавлена кнопка Ключ реализации Таланта
         buttons.add(InlineKeyboardButton.builder().text("Тень 1").callbackData("shadow1_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Тень 2").callbackData("shadow2_description").build());
         buttons.add(InlineKeyboardButton.builder().text("Тень 3").callbackData("shadow3_description").build());
@@ -536,6 +563,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int destinyKey = month;
         this.destinyKey = destinyKey;
         int talentKey = sumOfDigits(year);
+        this.talentKey = talentKey;
 
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
         this.centerPersonality = centerPersonality;
