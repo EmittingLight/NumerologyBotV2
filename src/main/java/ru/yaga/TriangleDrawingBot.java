@@ -28,6 +28,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String DESCRIPTION_FILE_PATH = "alterEgo.txt";
     private static final String PERSONALITY_DESCRIPTION_FILE_PATH = "personalityCenter.txt";
     private static final String DESTINATION_CENTER_FILE_PATH = "destinationCenter.txt";
+    private static final String CENTER_FAMILY_PROGRAMS_FILE_PATH = "centerFamilyPrograms.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -36,6 +37,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int alterEgo;
     private int centerPersonality;
     private int centerDestiny;
+    private int centerFamilyPrograms;
 
     @Override
     public String getBotUsername() {
@@ -112,6 +114,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             break;
                         case "center_destiny_description":
                             sendDescription(chatId, centerDestiny, DESTINATION_CENTER_FILE_PATH, "Центр Предназначения");
+                            break;
+                        case "center_family_programs_description":
+                            sendDescription(chatId, centerFamilyPrograms, CENTER_FAMILY_PROGRAMS_FILE_PATH, "Центр Родовых Программ");
                             break;
                         case "back":
                             sendGreeting(chatId);
@@ -499,6 +504,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
         this.centerDestiny = centerDestiny;
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
+        this.centerFamilyPrograms = centerFamilyPrograms;
 
         int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
         int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
