@@ -29,6 +29,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String PERSONALITY_DESCRIPTION_FILE_PATH = "personalityCenter.txt";
     private static final String DESTINATION_CENTER_FILE_PATH = "destinationCenter.txt";
     private static final String CENTER_FAMILY_PROGRAMS_FILE_PATH = "centerFamilyPrograms.txt";
+    private static final String KEY_DESTINY_REALIZATION_FILE_PATH = "keydestinyrealization.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -38,6 +39,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int centerPersonality;
     private int centerDestiny;
     private int centerFamilyPrograms;
+    private int destinyKey;
 
     @Override
     public String getBotUsername() {
@@ -118,6 +120,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         case "center_family_programs_description":
                             sendDescription(chatId, centerFamilyPrograms, CENTER_FAMILY_PROGRAMS_FILE_PATH, "Центр Родовых Программ");
                             break;
+                        case "key_destiny_realization":
+                            sendKeyDestinyRealizationDescription(chatId, destinyKey, KEY_DESTINY_REALIZATION_FILE_PATH, "Ключ Реализации Предназначения");
+                            break;
                         case "back":
                             sendGreeting(chatId);
                             break;
@@ -194,6 +199,38 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             e.printStackTrace();
             sendMessage(chatId, "Не удалось отправить кнопку.");
         }
+    }
+
+    private void sendKeyDestinyRealizationDescription(long chatId, int key, String filePath, String buttonName) {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            if (isKeyInFile(key, filePath)) {
+                String description = getDescription(key, filePath);
+                String formattedDescription = formatDescription(description, buttonName);
+                sendMessage(chatId, formattedDescription);
+            } else {
+                sendMessage(chatId, "Описание для данного ключа не найдено.");
+            }
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание.");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось отправить кнопку.");
+        }
+    }
+
+    private boolean isKeyInFile(int key, String filePath) throws IOException {
+        List<String> keys = Files.readAllLines(Paths.get(filePath));
+        for (String line : keys) {
+            if (line.startsWith(Integer.toString(key))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getDescription(int key, String filePath) throws IOException {
@@ -497,6 +534,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int alterEgo = applyMinus22Rule(day);
         this.alterEgo = alterEgo;
         int destinyKey = month;
+        this.destinyKey = destinyKey;
         int talentKey = sumOfDigits(year);
 
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
@@ -698,23 +736,3 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
