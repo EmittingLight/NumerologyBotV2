@@ -27,6 +27,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String SUPPORT_FILE_PATH = "support.txt";
     private static final String DESCRIPTION_FILE_PATH = "alterEgo.txt";
     private static final String PERSONALITY_DESCRIPTION_FILE_PATH = "personalityCenter.txt";
+    private static final String DESTINATION_CENTER_FILE_PATH = "destinationCenter.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -34,6 +35,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int selectedYear;
     private int alterEgo;
     private int centerPersonality;
+    private int centerDestiny;
 
     @Override
     public String getBotUsername() {
@@ -56,20 +58,22 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     try {
                         selectedYear = Integer.parseInt(messageText);
                         if (selectedYear < 1000 || selectedYear > 9999) {
-                            sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
+                            promptYearInput(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                         } else {
                             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
                             sendImage(chatId, image);
                             showResultButtons(chatId);
                         }
                     } catch (NumberFormatException e) {
-                        sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
+                        promptYearInput(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                     } catch (IOException | TelegramApiException e) {
                         e.printStackTrace();
                         sendMessage(chatId, "Произошла ошибка при обработке вашей команды. Пожалуйста, попробуйте снова.");
                     }
                 } else if (messageText.equals("/start")) {
                     sendGreeting(chatId);
+                } else {
+                    sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                 }
             } else if (update.hasCallbackQuery()) {
                 String callbackData = update.getCallbackQuery().getData();
@@ -80,7 +84,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     showMonthPicker(chatId);
                 } else if (callbackData.startsWith("date:month:")) {
                     selectedMonth = Integer.parseInt(callbackData.split(":")[2]);
-                    promptYearInput(chatId);
+                    promptYearInput(chatId, "Теперь введите год в формате: YYYY");
                 } else if (callbackData.equals("description")) {
                     showDescriptionButtons(chatId);
                 } else {
@@ -106,6 +110,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         case "personality_description":
                             sendDescription(chatId, centerPersonality, PERSONALITY_DESCRIPTION_FILE_PATH, "Центр Личности");
                             break;
+                        case "center_destiny_description":
+                            sendDescription(chatId, centerDestiny, DESTINATION_CENTER_FILE_PATH, "Центр Предназначения");
+                            break;
                         case "back":
                             sendGreeting(chatId);
                             break;
@@ -117,6 +124,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
+            sendMessage(update.getMessage().getChatId(), "Произошла ошибка при обработке вашей команды. Пожалуйста, попробуйте снова.");
         }
     }
 
@@ -292,10 +300,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         execute(message);
     }
 
-    private void promptYearInput(long chatId) throws TelegramApiException {
+    private void promptYearInput(long chatId, String text) throws TelegramApiException {
         SendMessage message = SendMessage.builder()
                 .chatId(String.valueOf(chatId))
-                .text("Теперь введите год в формате: YYYY")
+                .text(text)
                 .build();
         execute(message);
     }
@@ -489,6 +497,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
         this.centerPersonality = centerPersonality;
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
+        this.centerDestiny = centerDestiny;
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
 
         int maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
