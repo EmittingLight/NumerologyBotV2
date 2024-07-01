@@ -33,7 +33,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String TALENT_KEY_REALIZATION_FILE_PATH = "talentKey.txt";
     private static final String MASKS_RED_DESCRIPTION_FILE_PATH = "masksreddescription.txt";
     private static final String MASKS_GREEN_DESCRIPTION_FILE_PATH = "masksgreendescription.txt";
-    private static final String MASKS_PURPLE_DESCRIPTION_FILE_PATH = "maskspurpedescription.txt"; // добавлен новый путь к файлу описания
+    private static final String MASKS_PURPLE_DESCRIPTION_FILE_PATH = "maskspurpedescription.txt";
+    private static final String SHADOW1_FILE_PATH = "shadow1.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -54,6 +55,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int maskHealingLoveScenario;
     private int maskKarmicDestiny;
     private int maskHeartLine;
+    private int shadow1;
 
     @Override
     public String getBotUsername() {
@@ -110,7 +112,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 } else if (callbackData.equals("masks_green_description")) {
                     handleMaskGreenDescription(chatId);
                 } else if (callbackData.equals("masks_purple_description")) {
-                    handleMaskPurpleDescription(chatId); // добавлен вызов новой обработки
+                    handleMaskPurpleDescription(chatId);
+                } else if (callbackData.equals("shadow1_description")) {
+                    handleShadow1Description(chatId);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -221,6 +225,21 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
+    private void handleShadow1Description(long chatId) throws TelegramApiException {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String shadow1Description = getDescription(shadow1, SHADOW1_FILE_PATH);
+            sendLongMessage(chatId, shadow1Description);
+
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание для Тень 1.");
+        }
+    }
+
     private void sendLongMessage(long chatId, String text) throws TelegramApiException {
         int maxMessageLength = 4096;
         for (int i = 0; i < text.length(); i += maxMessageLength) {
@@ -237,6 +256,16 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             }
         }
         return "Описание не найдено для значения: " + maskValue;
+    }
+
+    private String getDescription(int key, String filePath) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(filePath));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(key))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено.";
     }
 
     private void sendGreeting(long chatId) {
@@ -354,16 +383,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             }
         }
         return false;
-    }
-
-    private String getDescription(int key, String filePath) throws IOException {
-        List<String> lines = Files.readAllLines(Paths.get(filePath));
-        for (String line : lines) {
-            if (line.startsWith(Integer.toString(key))) {
-                return line.substring(line.indexOf(' ') + 1);
-            }
-        }
-        return "Описание не найдено.";
     }
 
     private String formatDescription(String description, String buttonName) {
@@ -676,7 +695,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
         maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
 
-        int shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
+        shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
         int shadow2 = calculateShadow(maskTalentRealization, maskHeartLine, maskScenarioTransmission);
         int shadow3 = calculateShadow(maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing);
         int typage = calculateTypage(shadow1, shadow2, shadow3);
