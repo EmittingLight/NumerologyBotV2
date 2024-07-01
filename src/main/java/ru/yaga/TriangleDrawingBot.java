@@ -35,6 +35,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String MASKS_GREEN_DESCRIPTION_FILE_PATH = "masksgreendescription.txt";
     private static final String MASKS_PURPLE_DESCRIPTION_FILE_PATH = "maskspurpedescription.txt";
     private static final String SHADOW1_FILE_PATH = "shadow1.txt";
+    private static final String SHADOW2_FILE_PATH = "shadow2.txt";
+    private static final String SHADOW3_FILE_PATH = "shadow3.txt";
+    private static final String TYPAGE_FILE_PATH = "typage.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -56,6 +59,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int maskKarmicDestiny;
     private int maskHeartLine;
     private int shadow1;
+    private int shadow2;
+    private int shadow3;
+    private int typage;
 
     @Override
     public String getBotUsername() {
@@ -114,7 +120,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 } else if (callbackData.equals("masks_purple_description")) {
                     handleMaskPurpleDescription(chatId);
                 } else if (callbackData.equals("shadow1_description")) {
-                    handleShadow1Description(chatId);
+                    handleShadowDescription(chatId, shadow1, SHADOW1_FILE_PATH);
+                } else if (callbackData.equals("shadow2_description")) {
+                    handleShadowDescription(chatId, shadow2, SHADOW2_FILE_PATH);
+                } else if (callbackData.equals("shadow3_description")) {
+                    handleShadowDescription(chatId, shadow3, SHADOW3_FILE_PATH);
+                } else if (callbackData.equals("typage_description")) {
+                    handleTypageDescription(chatId);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -225,18 +237,33 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleShadow1Description(long chatId) throws TelegramApiException {
+    private void handleShadowDescription(long chatId, int shadow, String filePath) throws TelegramApiException {
         try {
             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
 
-            String shadow1Description = getDescription(shadow1, SHADOW1_FILE_PATH);
-            sendLongMessage(chatId, shadow1Description);
+            String shadowDescription = getDescription(shadow, filePath);
+            sendLongMessage(chatId, shadowDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
             e.printStackTrace();
-            sendMessage(chatId, "Не удалось загрузить описание для Тень 1.");
+            sendMessage(chatId, "Не удалось загрузить описание для " + filePath);
+        }
+    }
+
+    private void handleTypageDescription(long chatId) throws TelegramApiException {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String typageDescription = getDescription(typage, TYPAGE_FILE_PATH);
+            sendLongMessage(chatId, typageDescription);
+
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание типажа.");
         }
     }
 
@@ -696,9 +723,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
 
         shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
-        int shadow2 = calculateShadow(maskTalentRealization, maskHeartLine, maskScenarioTransmission);
-        int shadow3 = calculateShadow(maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing);
-        int typage = calculateTypage(shadow1, shadow2, shadow3);
+        shadow2 = calculateShadow(maskTalentRealization, maskHeartLine, maskScenarioTransmission);
+        shadow3 = calculateShadow(maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing);
+        typage = calculateTypage(shadow1, shadow2, shadow3);
 
         int assemblyPoint = calculateAssemblyPoint(destinyKey, talentKey, centerFamilyPrograms, centerPersonality, centerDestiny);
         int incarnationProfile = calculateIncarnationProfile(shadow1, shadow2, shadow3, typage);
@@ -877,3 +904,4 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
