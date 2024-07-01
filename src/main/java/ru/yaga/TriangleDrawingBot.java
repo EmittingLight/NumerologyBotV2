@@ -32,6 +32,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String KEY_DESTINY_REALIZATION_FILE_PATH = "keydestinyrealization.txt";
     private static final String TALENT_KEY_REALIZATION_FILE_PATH = "talentKey.txt";
     private static final String MASKS_RED_DESCRIPTION_FILE_PATH = "masksreddescription.txt";
+    private static final String MASKS_GREEN_DESCRIPTION_FILE_PATH = "masksgreendescription.txt";
+    private static final String MASKS_PURPLE_DESCRIPTION_FILE_PATH = "maskspurpedescription.txt"; // добавлен новый путь к файлу описания
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -46,6 +48,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int maskLoveScenario;
     private int maskKarmicTask;
     private int maskLoveTransmission;
+    private int maskFinancialHealing;
+    private int maskTalentRealization;
+    private int maskScenarioTransmission;
+    private int maskHealingLoveScenario;
+    private int maskKarmicDestiny;
+    private int maskHeartLine;
 
     @Override
     public String getBotUsername() {
@@ -99,6 +107,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     showDescriptionButtons(chatId);
                 } else if (callbackData.equals("masks_red_description")) {
                     handleMaskRedDescription(chatId);
+                } else if (callbackData.equals("masks_green_description")) {
+                    handleMaskGreenDescription(chatId);
+                } else if (callbackData.equals("masks_purple_description")) {
+                    handleMaskPurpleDescription(chatId); // добавлен вызов новой обработки
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -154,11 +166,53 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
 
-            String maskDescription = getMaskDescription(maskLoveScenario) + "\n\n" +
-                    getMaskDescription(maskKarmicTask) + "\n\n" +
-                    getMaskDescription(maskLoveTransmission);
+            String maskLoveScenarioDescription = getMaskDescription(maskLoveScenario, MASKS_RED_DESCRIPTION_FILE_PATH);
+            String maskKarmicTaskDescription = getMaskDescription(maskKarmicTask, MASKS_RED_DESCRIPTION_FILE_PATH);
+            String maskLoveTransmissionDescription = getMaskDescription(maskLoveTransmission, MASKS_RED_DESCRIPTION_FILE_PATH);
 
-            sendLongMessage(chatId, maskDescription);
+            sendLongMessage(chatId, maskLoveScenarioDescription);
+            sendLongMessage(chatId, maskKarmicTaskDescription);
+            sendLongMessage(chatId, maskLoveTransmissionDescription);
+
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание масок.");
+        }
+    }
+
+    private void handleMaskGreenDescription(long chatId) throws TelegramApiException {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String maskFinancialHealingDescription = getMaskDescription(maskFinancialHealing, MASKS_GREEN_DESCRIPTION_FILE_PATH);
+            String maskTalentRealizationDescription = getMaskDescription(maskTalentRealization, MASKS_GREEN_DESCRIPTION_FILE_PATH);
+            String maskScenarioTransmissionDescription = getMaskDescription(maskScenarioTransmission, MASKS_GREEN_DESCRIPTION_FILE_PATH);
+
+            sendLongMessage(chatId, maskFinancialHealingDescription);
+            sendLongMessage(chatId, maskTalentRealizationDescription);
+            sendLongMessage(chatId, maskScenarioTransmissionDescription);
+
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание масок.");
+        }
+    }
+
+    private void handleMaskPurpleDescription(long chatId) throws TelegramApiException {
+        try {
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String maskHealingLoveScenarioDescription = getMaskDescription(maskHealingLoveScenario, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
+            String maskKarmicDestinyDescription = getMaskDescription(maskKarmicDestiny, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
+            String maskHeartLineDescription = getMaskDescription(maskHeartLine, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
+
+            sendLongMessage(chatId, maskHealingLoveScenarioDescription);
+            sendLongMessage(chatId, maskKarmicDestinyDescription);
+            sendLongMessage(chatId, maskHeartLineDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -175,8 +229,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private String getMaskDescription(int maskValue) throws IOException {
-        List<String> lines = Files.readAllLines(Paths.get(MASKS_RED_DESCRIPTION_FILE_PATH));
+    private String getMaskDescription(int maskValue, String filePath) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(filePath));
         for (String line : lines) {
             if (line.startsWith(Integer.toString(maskValue))) {
                 return line.substring(line.indexOf(' ') + 1);
@@ -613,14 +667,14 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         this.centerFamilyPrograms = centerFamilyPrograms;
 
         maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
-        int maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
+        maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
         maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
-        int maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
-        int maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
-        int maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
-        int maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
+        maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
+        maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
+        maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
+        maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
         maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
-        int maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
+        maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
 
         int shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
         int shadow2 = calculateShadow(maskTalentRealization, maskHeartLine, maskScenarioTransmission);
@@ -804,4 +858,3 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
