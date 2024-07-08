@@ -186,9 +186,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             String maskKarmicTaskDescription = getMaskDescription(maskKarmicTask, MASKS_RED_DESCRIPTION_FILE_PATH);
             String maskLoveTransmissionDescription = getMaskDescription(maskLoveTransmission, MASKS_RED_DESCRIPTION_FILE_PATH);
 
-            sendLongMessage(chatId, maskLoveScenarioDescription);
-            sendLongMessage(chatId, maskKarmicTaskDescription);
-            sendLongMessage(chatId, maskLoveTransmissionDescription);
+            sendFormattedMessage(chatId, "Маски 🔴", maskLoveScenarioDescription);
+            sendFormattedMessage(chatId, "Маски 🔴", maskKarmicTaskDescription);
+            sendFormattedMessage(chatId, "Маски 🔴", maskLoveTransmissionDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -206,9 +206,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             String maskTalentRealizationDescription = getMaskDescription(maskTalentRealization, MASKS_GREEN_DESCRIPTION_FILE_PATH);
             String maskScenarioTransmissionDescription = getMaskDescription(maskScenarioTransmission, MASKS_GREEN_DESCRIPTION_FILE_PATH);
 
-            sendLongMessage(chatId, maskFinancialHealingDescription);
-            sendLongMessage(chatId, maskTalentRealizationDescription);
-            sendLongMessage(chatId, maskScenarioTransmissionDescription);
+            sendFormattedMessage(chatId, "Маски 🟢", maskFinancialHealingDescription);
+            sendFormattedMessage(chatId, "Маски 🟢", maskTalentRealizationDescription);
+            sendFormattedMessage(chatId, "Маски 🟢", maskScenarioTransmissionDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -226,9 +226,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             String maskKarmicDestinyDescription = getMaskDescription(maskKarmicDestiny, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
             String maskHeartLineDescription = getMaskDescription(maskHeartLine, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
 
-            sendLongMessage(chatId, maskHealingLoveScenarioDescription);
-            sendLongMessage(chatId, maskKarmicDestinyDescription);
-            sendLongMessage(chatId, maskHeartLineDescription);
+            sendFormattedMessage(chatId, "Маски 🟣", maskHealingLoveScenarioDescription);
+            sendFormattedMessage(chatId, "Маски 🟣", maskKarmicDestinyDescription);
+            sendFormattedMessage(chatId, "Маски 🟣", maskHeartLineDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -243,7 +243,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             sendImage(chatId, image);
 
             String shadowDescription = getDescription(shadow, filePath);
-            sendLongMessage(chatId, shadowDescription);
+            sendFormattedMessage(chatId, "Тень", shadowDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -258,13 +258,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             sendImage(chatId, image);
 
             String typageDescription = getDescription(typage, TYPAGE_FILE_PATH);
-            sendLongMessage(chatId, typageDescription);
+            sendFormattedMessage(chatId, "Типаж", typageDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
             e.printStackTrace();
             sendMessage(chatId, "Не удалось загрузить описание типажа.");
         }
+    }
+
+    private void sendFormattedMessage(long chatId, String buttonName, String text) throws TelegramApiException {
+        String formattedText = buttonName + " для даты рождения " + String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear) + ":\n\n" + text;
+        sendLongMessage(chatId, formattedText);
     }
 
     private void sendLongMessage(long chatId, String text) throws TelegramApiException {
@@ -417,7 +422,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         formattedDescription.append(buttonName)
                 .append(" для даты рождения ")
                 .append(String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear))
-                .append("\n\n");
+                .append(":\n\n");
 
         String[] lines = description.split("(?=\\+|--|\\*)");
         for (String line : lines) {
@@ -904,4 +909,3 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
