@@ -132,6 +132,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         case "register":
                             sendMessage(chatId, "Регистрация в боте...");
                             break;
+                        case "subscribe":
+                            showSubscriptionOptions(chatId);
+                            break;
                         case "calculator":
                             showDayPicker(chatId);
                             break;
@@ -164,6 +167,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             break;
                         case "back":
                             sendGreeting(chatId);
+                            break;
+                        case "subscribe_1_month":
+                            sendMessage(chatId, "Вы выбрали подписку на 1 месяц за 1500.");
+                            break;
+                        case "subscribe_3_months":
+                            sendMessage(chatId, "Вы выбрали подписку на 3 месяца за 3000.");
+                            break;
+                        case "subscribe_12_months":
+                            sendMessage(chatId, "Вы выбрали подписку на 12 месяцев за 20000.");
                             break;
                         default:
                             sendDescription(chatId, Integer.parseInt(callbackData.split("_")[0]), callbackData.split("_")[1] + ".txt", callbackData);
@@ -601,6 +613,37 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         execute(message);
     }
 
+    private void showSubscriptionOptions(long chatId) throws TelegramApiException {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        rowInline1.add(InlineKeyboardButton.builder().text("Купить подписку на 1 месяц за 1500").callbackData("subscribe_1_month").build());
+
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        rowInline2.add(InlineKeyboardButton.builder().text("Купить подписку на 3 месяца за 3000").callbackData("subscribe_3_months").build());
+
+        List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
+        rowInline3.add(InlineKeyboardButton.builder().text("Купить подписку на 12 месяцев за 20000").callbackData("subscribe_12_months").build());
+
+        List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
+        rowInline4.add(InlineKeyboardButton.builder().text("Вернуться назад").callbackData("back").build());
+
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+        rowsInline.add(rowInline3);
+        rowsInline.add(rowInline4);
+
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Выберите подписку:")
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
+        execute(message);
+    }
+
     private void sendBackButton(long chatId) throws TelegramApiException {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -910,3 +953,4 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
