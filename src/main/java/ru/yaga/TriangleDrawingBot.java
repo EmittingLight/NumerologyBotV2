@@ -438,6 +438,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
         rowInline1.add(InlineKeyboardButton.builder().text("Зарегистрироваться в боте").callbackData("register").build());
+        rowInline1.add(InlineKeyboardButton.builder().text("Купить подписку").callbackData("subscribe").build());
 
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
         rowInline2.add(InlineKeyboardButton.builder().text("Запуск калькулятора").callbackData("calculator").build());
