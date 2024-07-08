@@ -1,5 +1,4 @@
 package ru.yaga;
-
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,10 +17,13 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TriangleDrawingBot extends TelegramLongPollingBot {
 
+    private static final String USERS_FILE_PATH = "users.txt";
     private static final String GREETING_FILE_PATH = "greeting.txt";
     private static final String REMINDER_FILE_PATH = "reminder.txt";
     private static final String SUPPORT_FILE_PATH = "support.txt";
@@ -62,6 +64,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int shadow2;
     private int shadow3;
     private int typage;
+    private Map<Long, String> registrationSteps = new HashMap<>();
 
     @Override
     public String getBotUsername() {
@@ -97,7 +100,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                         sendMessage(chatId, "Произошла ошибка при обработке вашей команды. Пожалуйста, попробуйте снова.");
                     }
                 } else if (messageText.equals("/start")) {
-                    sendGreeting(chatId);
+                    handleStartCommand(chatId);
+                } else if (registrationSteps.containsKey(chatId)) {
+                    handleRegistrationSteps(chatId, messageText);
                 } else {
                     sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                 }
@@ -130,7 +135,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 } else {
                     switch (callbackData) {
                         case "register":
-                            sendMessage(chatId, "Регистрация в боте...");
+                            handleStartCommand(chatId);
                             break;
                         case "subscribe":
                             showSubscriptionOptions(chatId);
@@ -186,6 +191,57 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
             sendMessage(update.getMessage().getChatId(), "Произошла ошибка при обработке вашей команды. Пожалуйста, попробуйте снова.");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void handleStartCommand(long chatId) throws IOException, TelegramApiException {
+        if (isUserRegistered(chatId)) {
+            sendMessage(chatId, "Вы уже зарегистрированы.");
+            sendBackButton(chatId);
+        } else {
+            sendMessage(chatId, "Для регистрации введите ваше имя:");
+            registrationSteps.put(chatId, "name");
+        }
+    }
+
+    private void handleRegistrationSteps(long chatId, String messageText) throws IOException, TelegramApiException {
+        String step = registrationSteps.get(chatId);
+        if (step.equals("name")) {
+            sendMessage(chatId, "Введите ваш телефон:");
+            registrationSteps.put(chatId, "phone:" + messageText);
+        } else if (step.startsWith("phone:")) {
+            String name = step.split(":")[1];
+            String phone = messageText;
+            saveUser(chatId, name, phone);
+            sendMessage(chatId, "Регистрация прошла успешно.");
+            registrationSteps.remove(chatId);
+            sendBackButton(chatId);
+        }
+    }
+
+    private boolean isUserRegistered(long chatId) throws IOException {
+        File file = new File(USERS_FILE_PATH);
+        if (!file.exists()) {
+            return false;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith(Long.toString(chatId))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void saveUser(long chatId, String name, String phone) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(USERS_FILE_PATH, true))) {
+            writer.write(chatId + "," + name + "," + phone);
+            writer.newLine();
         }
     }
 
@@ -953,4 +1009,3 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
-
