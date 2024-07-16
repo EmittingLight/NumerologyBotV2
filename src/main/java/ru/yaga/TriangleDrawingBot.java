@@ -41,6 +41,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String SHADOW3_FILE_PATH = "shadow3.txt";
     private static final String TYPAGE_FILE_PATH = "typage.txt";
     private static final String ASSEMBLAGE_POINT_FILE_PATH = "assemblagePoint.txt";
+    private static final String INCARNATION_PROFILE_FILE_PATH = "incarnationProfile.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -135,6 +136,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleTypageDescription(chatId);
                 } else if (callbackData.equals("assembly_point_description")) {
                     handleAssemblyPointDescription(chatId);
+                } else if (callbackData.equals("incarnation_profile_description")) {
+                    handleIncarnationProfileDescription(chatId);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -197,6 +200,33 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void handleIncarnationProfileDescription(long chatId) throws TelegramApiException {
+        try {
+            int incarnationProfile = calculateIncarnationProfile(shadow1, shadow2, shadow3, typage);
+            String description = getIncarnationProfileDescription(incarnationProfile);
+
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String formattedText = "Инкарнационный профиль для даты рождения " + String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear) + ":\n\n" + description;
+            sendMessage(chatId, formattedText);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание инкарнационного профиля.");
+        }
+        showDescriptionButtons(chatId);
+    }
+
+    private String getIncarnationProfileDescription(int key) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(INCARNATION_PROFILE_FILE_PATH));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(key))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено для значения: " + key;
     }
 
     private void handleAssemblyPointDescription(long chatId) throws TelegramApiException {
