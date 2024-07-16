@@ -66,6 +66,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int shadow2;
     private int shadow3;
     private int typage;
+    private int incarnationProfile;
     private Map<Long, String> registrationSteps = new HashMap<>();
 
     @Override
@@ -210,7 +211,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
 
-            String formattedText = "Инкарнационный профиль для даты рождения " + String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear) + ":\n\n" + description;
+            String formattedText = formatDescription(description, "Инкарнационный профиль");
             sendMessage(chatId, formattedText);
         } catch (IOException e) {
             e.printStackTrace();
@@ -237,7 +238,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
             sendImage(chatId, image);
 
-            String formattedText = "Точка Сборки для даты рождения " + String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear) + ":\n\n" + description;
+            String formattedText = formatDescription(description, "Точка Сборки");
             sendMessage(chatId, formattedText);
         } catch (IOException e) {
             e.printStackTrace();
@@ -258,10 +259,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void handleStartCommand(long chatId) throws IOException, TelegramApiException {
         if (isUserRegistered(chatId)) {
-            sendMessage(chatId, "Вы уже зарегистрированы.");
+            sendMessage(chatId, formatDescription("Вы уже зарегистрированы.", "Регистрация"));
             sendBackButton(chatId);
         } else {
-            sendMessage(chatId, "Для регистрации введите ваше имя:");
+            sendMessage(chatId, formatDescription("Для регистрации введите ваше имя:", "Регистрация"));
             registrationSteps.put(chatId, "name");
         }
     }
@@ -269,13 +270,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void handleRegistrationSteps(long chatId, String messageText) throws IOException, TelegramApiException {
         String step = registrationSteps.get(chatId);
         if (step.equals("name")) {
-            sendMessage(chatId, "Введите ваш телефон:");
+            sendMessage(chatId, formatDescription("Введите ваш телефон:", "Регистрация"));
             registrationSteps.put(chatId, "phone:" + messageText);
         } else if (step.startsWith("phone:")) {
             String name = step.split(":")[1];
             String phone = messageText;
             saveUser(chatId, name, phone);
-            sendMessage(chatId, "Регистрация прошла успешно.");
+            sendMessage(chatId, formatDescription("Регистрация прошла успешно.", "Регистрация"));
             registrationSteps.remove(chatId);
             sendBackButton(chatId);
         }
@@ -396,7 +397,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     }
 
     private void sendFormattedMessage(long chatId, String buttonName, String text) throws TelegramApiException {
-        String formattedText = buttonName + " для даты рождения " + String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear) + ":\n\n" + text;
+        String formattedText = formatDescription(text, buttonName);
         sendLongMessage(chatId, formattedText);
     }
 
@@ -431,7 +432,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendGreeting(long chatId) {
         try {
             String greeting = new String(Files.readAllBytes(Paths.get(GREETING_FILE_PATH)));
-            sendMessage(chatId, greeting);
+            sendMessage(chatId, formatDescription(greeting, "Приветствие"));
 
             sendImage(chatId, new File(IMAGE_PATH));
 
@@ -448,7 +449,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendReminder(long chatId) {
         try {
             String reminder = new String(Files.readAllBytes(Paths.get(REMINDER_FILE_PATH)));
-            sendMessage(chatId, reminder);
+            sendMessage(chatId, formatDescription(reminder, "Памятка"));
             sendBackButton(chatId);
         } catch (IOException e) {
             e.printStackTrace();
@@ -462,7 +463,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendSupport(long chatId) {
         try {
             String support = new String(Files.readAllBytes(Paths.get(SUPPORT_FILE_PATH)));
-            sendMessage(chatId, support);
+            sendMessage(chatId, formatDescription(support, "Служба поддержки"));
             sendBackButton(chatId);
         } catch (IOException e) {
             e.printStackTrace();
@@ -501,7 +502,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 String formattedDescription = formatDescription(description, buttonName);
                 sendMessage(chatId, formattedDescription);
             } else {
-                sendMessage(chatId, "Описание для данного ключа не найдено.");
+                sendMessage(chatId, formatDescription("Описание для данного ключа не найдено.", buttonName));
             }
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -523,7 +524,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 String formattedDescription = formatDescription(description, buttonName);
                 sendMessage(chatId, formattedDescription);
             } else {
-                sendMessage(chatId, "Описание для данного ключа не найдено.");
+                sendMessage(chatId, formatDescription("Описание для данного ключа не найдено.", buttonName));
             }
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -1069,3 +1070,4 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
