@@ -40,6 +40,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String SHADOW2_FILE_PATH = "shadow2.txt";
     private static final String SHADOW3_FILE_PATH = "shadow3.txt";
     private static final String TYPAGE_FILE_PATH = "typage.txt";
+    private static final String ASSEMBLAGE_POINT_FILE_PATH = "assemblagePoint.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -132,6 +133,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleShadowDescription(chatId, shadow3, SHADOW3_FILE_PATH);
                 } else if (callbackData.equals("typage_description")) {
                     handleTypageDescription(chatId);
+                } else if (callbackData.equals("assembly_point_description")) {
+                    handleAssemblyPointDescription(chatId);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -194,6 +197,33 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void handleAssemblyPointDescription(long chatId) throws TelegramApiException {
+        try {
+            int assemblyPoint = calculateAssemblyPoint(destinyKey, talentKey, centerFamilyPrograms, centerPersonality, centerDestiny);
+            String description = getAssemblyPointDescription(assemblyPoint);
+
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String formattedText = "Точка Сборки для даты рождения " + String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear) + ":\n\n" + description;
+            sendMessage(chatId, formattedText);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание для Точки Сборки.");
+        }
+        showDescriptionButtons(chatId);
+    }
+
+    private String getAssemblyPointDescription(int key) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(ASSEMBLAGE_POINT_FILE_PATH));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(key))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено для значения: " + key;
     }
 
     private void handleStartCommand(long chatId) throws IOException, TelegramApiException {
