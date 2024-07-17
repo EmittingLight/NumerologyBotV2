@@ -66,7 +66,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int shadow2;
     private int shadow3;
     private int typage;
-    private int incarnationProfile;
     private Map<Long, String> registrationSteps = new HashMap<>();
 
     @Override
@@ -432,7 +431,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendGreeting(long chatId) {
         try {
             String greeting = new String(Files.readAllBytes(Paths.get(GREETING_FILE_PATH)));
-            sendMessage(chatId, formatDescription(greeting, "Приветствие"));
+            sendMessage(chatId, greeting);
 
             sendImage(chatId, new File(IMAGE_PATH));
 
@@ -449,7 +448,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendReminder(long chatId) {
         try {
             String reminder = new String(Files.readAllBytes(Paths.get(REMINDER_FILE_PATH)));
-            sendMessage(chatId, formatDescription(reminder, "Памятка"));
+            sendMessage(chatId, reminder);
             sendBackButton(chatId);
         } catch (IOException e) {
             e.printStackTrace();
@@ -463,7 +462,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendSupport(long chatId) {
         try {
             String support = new String(Files.readAllBytes(Paths.get(SUPPORT_FILE_PATH)));
-            sendMessage(chatId, formatDescription(support, "Служба поддержки"));
+            sendMessage(chatId,support);
             sendBackButton(chatId);
         } catch (IOException e) {
             e.printStackTrace();
@@ -820,11 +819,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private int calculateSoulKey(int value1, int value2) {
         int sum = value1 + value2;
-        return applyMinus22Rule(sum);
-    }
-
-    private int calculateMask(int value1, int value2, int value3) {
-        int sum = value1 + value2 + value3;
         return applyMinus22Rule(sum);
     }
 
