@@ -43,6 +43,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String ASSEMBLAGE_POINT_FILE_PATH = "assemblagePoint.txt";
     private static final String INCARNATION_PROFILE_FILE_PATH = "incarnationProfile.txt";
     private static final String RESOURCE_FILE_PATH = "resource.txt";
+    private static final String QUEST_FILE_PATH = "quest.txt"; // добавили путь к файлу с квестами
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
     private int selectedDay;
@@ -68,6 +69,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private int shadow3;
     private int typage;
     private int resource;
+    private int quest; // добавили поле для квеста
     private Map<Long, String> registrationSteps = new HashMap<>();
 
     @Override
@@ -122,6 +124,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     promptYearInput(chatId, "Теперь введите год в формате: YYYY");
                 } else if (callbackData.equals("description")) {
                     showDescriptionButtons(chatId);
+                } else if (callbackData.equals("quest_description")) { // добавили обработку нажатия на кнопку "Квест"
+                    handleQuestDescription(chatId);
                 } else if (callbackData.equals("masks_red_description")) {
                     handleMaskRedDescription(chatId);
                 } else if (callbackData.equals("masks_green_description")) {
@@ -204,6 +208,34 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void handleQuestDescription(long chatId) throws TelegramApiException {
+        try {
+            int questValue = calculateQuest(selectedDay, selectedMonth, selectedYear);
+            this.quest = questValue;
+            String questDescription = getQuestDescription(questValue);
+
+            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            sendImage(chatId, image);
+
+            String formattedText = formatDescription(questDescription, "Квест");
+            sendMessage(chatId, formattedText);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание квеста.");
+        }
+        showDescriptionButtons(chatId);
+    }
+
+    private String getQuestDescription(int key) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(QUEST_FILE_PATH));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(key))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено для значения: " + key;
     }
 
     private void handleIncarnationProfileDescription(long chatId) throws TelegramApiException {
