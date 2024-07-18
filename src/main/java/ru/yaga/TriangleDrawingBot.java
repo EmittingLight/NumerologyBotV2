@@ -258,10 +258,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void handleStartCommand(long chatId) throws IOException, TelegramApiException {
         if (isUserRegistered(chatId)) {
-            sendMessage(chatId, formatDescription("Вы уже зарегистрированы.", "Регистрация"));
+            sendMessage(chatId, formatDescription("", "Вы уже зарегистрированы."));
             sendBackButton(chatId);
         } else {
-            sendMessage(chatId, formatDescription("Для регистрации введите ваше имя:", "Регистрация"));
+            sendMessage(chatId, formatDescription("", "Для регистрации введите ваше имя"));
             registrationSteps.put(chatId, "name");
         }
     }
@@ -269,13 +269,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void handleRegistrationSteps(long chatId, String messageText) throws IOException, TelegramApiException {
         String step = registrationSteps.get(chatId);
         if (step.equals("name")) {
-            sendMessage(chatId, formatDescription("Введите ваш телефон:", "Регистрация"));
+            sendMessage(chatId, formatDescription("", "Введите ваш телефон"));
             registrationSteps.put(chatId, "phone:" + messageText);
         } else if (step.startsWith("phone:")) {
             String name = step.split(":")[1];
             String phone = messageText;
             saveUser(chatId, name, phone);
-            sendMessage(chatId, formatDescription("Регистрация прошла успешно.", "Регистрация"));
+            sendMessage(chatId, formatDescription("", "Регистрация прошла успешно."));
             registrationSteps.remove(chatId);
             sendBackButton(chatId);
         }
@@ -547,10 +547,16 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private String formatDescription(String description, String buttonName) {
         StringBuilder formattedDescription = new StringBuilder();
-        formattedDescription.append(buttonName)
-                .append(" для даты рождения ")
-                .append(String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear))
-                .append(":\n\n");
+        formattedDescription.append(buttonName);
+
+        // Проверка, что дата выбрана правильно
+        if (selectedDay != 0 && selectedMonth != 0 && selectedYear != 0) {
+            formattedDescription.append(" для даты рождения ")
+                    .append(String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear))
+                    .append(":\n\n");
+        } else {
+            formattedDescription.append(":\n\n");
+        }
 
         String[] lines = description.split("(?=\\+|--|\\*)");
         for (String line : lines) {
