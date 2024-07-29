@@ -128,6 +128,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleIncarnationProfileDescription(chatId, userData);
                 } else if (callbackData.equals("resource_description")) {
                     handleResourceDescription(chatId, userData);
+                } else if (callbackData.equals("arcanes_planets_description")) {
+                    handleArcanaPlanetsDescription(chatId, userData);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -193,6 +195,64 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
+
+    private void handleArcanaPlanetsDescription(long chatId, UserData userData) throws TelegramApiException {
+        try {
+            BufferedImage image = drawEsotericImage(userData);
+            sendImage(chatId, image);
+
+            String description = getArcanaPlanetsDescription(userData);
+            sendFormattedMessage(chatId, userData, "Арканы-Планеты", description);
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание арканов-планет.");
+        }
+    }
+
+    private String getArcanaPlanetsDescription(UserData userData) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get("arcanaPlanets.txt"));
+        Map<Integer, String> descriptions = new HashMap<>();
+
+        for (String line : lines) {
+            String[] parts = line.split(": ", 2);  // Ограничиваем split на два элемента
+            if (parts.length == 2) {
+                try {
+                    int key = Integer.parseInt(parts[0].trim());
+                    String value = parts[1].trim();
+                    descriptions.put(key, value);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid key format in line: " + line);
+                }
+            } else {
+                System.err.println("Invalid line format: " + line);
+            }
+        }
+
+        StringBuilder description = new StringBuilder();
+        if (descriptions.containsKey(userData.getDestinyKey())) {
+            description.append("Предназначение: ").append(descriptions.get(userData.getDestinyKey())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getTalentKey())) {
+            description.append("Талант: ").append(descriptions.get(userData.getTalentKey())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterPersonality())) {
+            description.append("Центр Личности: ").append(descriptions.get(userData.getCenterPersonality())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterDestiny())) {
+            description.append("Центр Предназначения: ").append(descriptions.get(userData.getCenterDestiny())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterFamilyPrograms())) {
+            description.append("Центр Родовых Программ: ").append(descriptions.get(userData.getCenterFamilyPrograms())).append("\n\n");
+        }
+
+        if (description.length() == 0) {
+            description.append("Описание для арканов-планет не найдено.");
+        }
+
+        return description.toString();
+    }
+
 
     private void handleQuestDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
@@ -841,9 +901,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private int applyMinus22Rule(int number) {
+    private int applyModuloRule(int number) {
         while (number > 22) {
             number -= 22;
+        }
+        while (number < 1) {
+            number += 22;
         }
         return number;
     }
@@ -859,7 +922,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private int calculateResource(int day, int month, int year) {
         int sum = sumOfDigits(day) + sumOfDigits(month) + sumOfDigits(year);
-        return applyMinus22Rule(sum);
+        return applyModuloRule(sum);
     }
 
     private int calculateQuest(int day, int month, int year) {
@@ -872,17 +935,17 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private int calculateSoulKey(int value1, int value2) {
         int sum = value1 + value2;
-        return applyMinus22Rule(sum);
+        return applyModuloRule(sum);
     }
 
     private int calculateShadow(int value1, int value2, int value3) {
         int sum = value1 + value2 + value3;
-        return applyMinus22Rule(sum);
+        return applyModuloRule(sum);
     }
 
     public int calculateTypage(int shadow1, int shadow2, int shadow3) {
         int sum = calculateShadowsSum(shadow1, shadow2, shadow3);
-        return applyMinus22Rule(sum);
+        return applyModuloRule(sum);
     }
 
     private int calculateShadowsSum(int shadow1, int shadow2, int shadow3) {
@@ -891,12 +954,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private int calculateAssemblyPoint(int destinyKey, int talentKey, int centerFamilyPrograms, int centerPersonality, int centerDestiny) {
         int sum = destinyKey + talentKey + centerFamilyPrograms + centerPersonality + centerDestiny;
-        return applyMinus22Rule(sum);
+        return applyModuloRule(sum);
     }
 
     private int calculateIncarnationProfile(int shadow1, int shadow2, int shadow3, int typage) {
         int sum = shadow1 + shadow2 + shadow3 + typage;
-        return applyMinus22Rule(sum);
+        return applyModuloRule(sum);
     }
 
     private BufferedImage drawEsotericImage(UserData userData) throws IOException {
@@ -911,11 +974,11 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2));
 
-        int alterEgo = applyMinus22Rule(userData.getSelectedDay());
+        int alterEgo = applyModuloRule(userData.getSelectedDay());
         userData.setAlterEgo(alterEgo);
-        int destinyKey = userData.getSelectedMonth();
+        int destinyKey = applyModuloRule(userData.getSelectedMonth());
         userData.setDestinyKey(destinyKey);
-        int talentKey = sumOfDigits(userData.getSelectedYear());
+        int talentKey = applyModuloRule(sumOfDigits(userData.getSelectedYear()));
         userData.setTalentKey(talentKey);
 
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
@@ -1354,4 +1417,5 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
