@@ -46,30 +46,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String QUEST_FILE_PATH = "quest.txt"; // добавили путь к файлу с квестами
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
-    private int selectedDay;
-    private int selectedMonth;
-    private int selectedYear;
-    private int alterEgo;
-    private int centerPersonality;
-    private int centerDestiny;
-    private int centerFamilyPrograms;
-    private int destinyKey;
-    private int talentKey;
-    private int maskLoveScenario;
-    private int maskKarmicTask;
-    private int maskLoveTransmission;
-    private int maskFinancialHealing;
-    private int maskTalentRealization;
-    private int maskScenarioTransmission;
-    private int maskHealingLoveScenario;
-    private int maskKarmicDestiny;
-    private int maskHeartLine;
-    private int shadow1;
-    private int shadow2;
-    private int shadow3;
-    private int typage;
-    private int resource;
-    private int quest; // добавили поле для квеста
+
+    private Map<Long, UserData> userDataMap = new HashMap<>();
     private Map<Long, String> registrationSteps = new HashMap<>();
 
     @Override
@@ -88,14 +66,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             if (update.hasMessage() && update.getMessage().hasText()) {
                 String messageText = update.getMessage().getText();
                 long chatId = update.getMessage().getChatId();
+                UserData userData = userDataMap.getOrDefault(chatId, new UserData());
 
                 if (messageText.matches("\\d{4}")) {
                     try {
-                        selectedYear = Integer.parseInt(messageText);
-                        if (selectedYear < 1000 || selectedYear > 9999) {
+                        userData.setSelectedYear(Integer.parseInt(messageText));
+                        if (userData.getSelectedYear() < 1000 || userData.getSelectedYear() > 9999) {
                             promptYearInput(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                         } else {
-                            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+                            BufferedImage image = drawEsotericImage(userData);
                             sendImage(chatId, image);
                             showResultButtons(chatId);
                         }
@@ -112,40 +91,43 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 } else {
                     sendMessage(chatId, "Введите корректный год в формате: YYYY (например, 1987).");
                 }
+
+                userDataMap.put(chatId, userData);
             } else if (update.hasCallbackQuery()) {
                 String callbackData = update.getCallbackQuery().getData();
                 long chatId = update.getCallbackQuery().getMessage().getChatId();
+                UserData userData = userDataMap.getOrDefault(chatId, new UserData());
 
                 if (callbackData.startsWith("date:day:")) {
-                    selectedDay = Integer.parseInt(callbackData.split(":")[2]);
+                    userData.setSelectedDay(Integer.parseInt(callbackData.split(":")[2]));
                     showMonthPicker(chatId);
                 } else if (callbackData.startsWith("date:month:")) {
-                    selectedMonth = Integer.parseInt(callbackData.split(":")[2]);
+                    userData.setSelectedMonth(Integer.parseInt(callbackData.split(":")[2]));
                     promptYearInput(chatId, "Теперь введите год в формате: YYYY");
                 } else if (callbackData.equals("description")) {
                     showDescriptionButtons(chatId);
-                } else if (callbackData.equals("quest_description")) { // добавили обработку нажатия на кнопку "Квест"
-                    handleQuestDescription(chatId);
+                } else if (callbackData.equals("quest_description")) {
+                    handleQuestDescription(chatId, userData);
                 } else if (callbackData.equals("masks_red_description")) {
-                    handleMaskRedDescription(chatId);
+                    handleMaskRedDescription(chatId, userData);
                 } else if (callbackData.equals("masks_green_description")) {
-                    handleMaskGreenDescription(chatId);
+                    handleMaskGreenDescription(chatId, userData);
                 } else if (callbackData.equals("masks_purple_description")) {
-                    handleMaskPurpleDescription(chatId);
+                    handleMaskPurpleDescription(chatId, userData);
                 } else if (callbackData.equals("shadow1_description")) {
-                    handleShadowDescription(chatId, shadow1, SHADOW1_FILE_PATH);
+                    handleShadowDescription(chatId, userData, userData.getShadow1(), SHADOW1_FILE_PATH);
                 } else if (callbackData.equals("shadow2_description")) {
-                    handleShadowDescription(chatId, shadow2, SHADOW2_FILE_PATH);
+                    handleShadowDescription(chatId, userData, userData.getShadow2(), SHADOW2_FILE_PATH);
                 } else if (callbackData.equals("shadow3_description")) {
-                    handleShadowDescription(chatId, shadow3, SHADOW3_FILE_PATH);
+                    handleShadowDescription(chatId, userData, userData.getShadow3(), SHADOW3_FILE_PATH);
                 } else if (callbackData.equals("typage_description")) {
-                    handleTypageDescription(chatId);
+                    handleTypageDescription(chatId, userData);
                 } else if (callbackData.equals("assembly_point_description")) {
-                    handleAssemblyPointDescription(chatId);
+                    handleAssemblyPointDescription(chatId, userData);
                 } else if (callbackData.equals("incarnation_profile_description")) {
-                    handleIncarnationProfileDescription(chatId);
+                    handleIncarnationProfileDescription(chatId, userData);
                 } else if (callbackData.equals("resource_description")) {
-                    handleResourceDescription(chatId);
+                    handleResourceDescription(chatId, userData);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -167,22 +149,22 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             showDayPicker(chatId);
                             break;
                         case "alter_ego_description":
-                            sendDescription(chatId, alterEgo, DESCRIPTION_FILE_PATH, "Альтер-Эго");
+                            sendDescription(chatId, userData, userData.getAlterEgo(), DESCRIPTION_FILE_PATH, "Альтер-Эго");
                             break;
                         case "personality_description":
-                            sendDescription(chatId, centerPersonality, PERSONALITY_DESCRIPTION_FILE_PATH, "Центр Личности");
+                            sendDescription(chatId, userData, userData.getCenterPersonality(), PERSONALITY_DESCRIPTION_FILE_PATH, "Центр Личности");
                             break;
                         case "center_destiny_description":
-                            sendDescription(chatId, centerDestiny, DESTINATION_CENTER_FILE_PATH, "Центр Предназначения");
+                            sendDescription(chatId, userData, userData.getCenterDestiny(), DESTINATION_CENTER_FILE_PATH, "Центр Предназначения");
                             break;
                         case "center_family_programs_description":
-                            sendDescription(chatId, centerFamilyPrograms, CENTER_FAMILY_PROGRAMS_FILE_PATH, "Центр Родовых Программ");
+                            sendDescription(chatId, userData, userData.getCenterFamilyPrograms(), CENTER_FAMILY_PROGRAMS_FILE_PATH, "Центр Родовых Программ");
                             break;
                         case "key_destiny_realization":
-                            sendKeyDestinyRealizationDescription(chatId, destinyKey, KEY_DESTINY_REALIZATION_FILE_PATH, "Ключ Реализации Предназначения");
+                            sendKeyDestinyRealizationDescription(chatId, userData, userData.getDestinyKey(), KEY_DESTINY_REALIZATION_FILE_PATH, "Ключ Реализации Предназначения");
                             break;
                         case "key_talent_realization":
-                            sendKeyTalentRealizationDescription(chatId, talentKey, TALENT_KEY_REALIZATION_FILE_PATH, "Ключ Реализации Таланта");
+                            sendKeyTalentRealizationDescription(chatId, userData, userData.getTalentKey(), TALENT_KEY_REALIZATION_FILE_PATH, "Ключ Реализации Таланта");
                             break;
                         case "back":
                             sendGreeting(chatId);
@@ -197,10 +179,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                             sendMessage(chatId, "Вы выбрали подписку на 12 месяцев за 20000.");
                             break;
                         default:
-                            sendDescription(chatId, Integer.parseInt(callbackData.split("_")[0]), callbackData.split("_")[1] + ".txt", callbackData);
+                            sendDescription(chatId, userData, Integer.parseInt(callbackData.split("_")[0]), callbackData.split("_")[1] + ".txt", callbackData);
                             break;
                     }
                 }
+
+                userDataMap.put(chatId, userData);
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
@@ -210,16 +194,16 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleQuestDescription(long chatId) throws TelegramApiException {
+    private void handleQuestDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            int questValue = calculateQuest(selectedDay, selectedMonth, selectedYear);
-            this.quest = questValue;
+            int questValue = calculateQuest(userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear());
+            userData.setQuest(questValue);
             String questDescription = getQuestDescription(questValue);
 
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String formattedText = formatDescription(questDescription, "Квест");
+            String formattedText = formatDescription(userData, questDescription, "Квест");
             sendMessage(chatId, formattedText);
         } catch (IOException e) {
             e.printStackTrace();
@@ -238,15 +222,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return "Описание не найдено для значения: " + key;
     }
 
-    private void handleIncarnationProfileDescription(long chatId) throws TelegramApiException {
+    private void handleIncarnationProfileDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            int incarnationProfile = calculateIncarnationProfile(shadow1, shadow2, shadow3, typage);
+            int incarnationProfile = calculateIncarnationProfile(userData.getShadow1(), userData.getShadow2(), userData.getShadow3(), userData.getTypage());
             String description = getIncarnationProfileDescription(incarnationProfile);
 
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String formattedText = formatDescription(description, "Инкарнационный профиль");
+            String formattedText = formatDescription(userData, description, "Инкарнационный профиль");
             sendMessage(chatId, formattedText);
         } catch (IOException e) {
             e.printStackTrace();
@@ -265,15 +249,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return "Описание не найдено для значения: " + key;
     }
 
-    private void handleAssemblyPointDescription(long chatId) throws TelegramApiException {
+    private void handleAssemblyPointDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            int assemblyPoint = calculateAssemblyPoint(destinyKey, talentKey, centerFamilyPrograms, centerPersonality, centerDestiny);
+            int assemblyPoint = calculateAssemblyPoint(userData.getDestinyKey(), userData.getTalentKey(), userData.getCenterFamilyPrograms(), userData.getCenterPersonality(), userData.getCenterDestiny());
             String description = getAssemblyPointDescription(assemblyPoint);
 
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String formattedText = formatDescription(description, "Точка Сборки");
+            String formattedText = formatDescription(userData, description, "Точка Сборки");
             sendMessage(chatId, formattedText);
         } catch (IOException e) {
             e.printStackTrace();
@@ -292,15 +276,15 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return "Описание не найдено для значения: " + key;
     }
 
-    private void handleResourceDescription(long chatId) throws TelegramApiException {
+    private void handleResourceDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            int resourceValue = calculateResource(selectedDay, selectedMonth, selectedYear);
+            int resourceValue = calculateResource(userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear());
             String description = getResourceDescription(resourceValue);
 
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String formattedText = formatDescription(description, "Ресурс");
+            String formattedText = formatDescription(userData, description, "Ресурс");
             sendMessage(chatId, formattedText);
         } catch (IOException e) {
             e.printStackTrace();
@@ -321,10 +305,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void handleStartCommand(long chatId) throws IOException, TelegramApiException {
         if (isUserRegistered(chatId)) {
-            sendMessage(chatId, formatDescription("", "Вы уже зарегистрированы."));
+            sendMessage(chatId, formatDescription(null, "", "Вы уже зарегистрированы."));
             sendBackButton(chatId);
         } else {
-            sendMessage(chatId, formatDescription("", "Для регистрации введите ваше имя"));
+            sendMessage(chatId, formatDescription(null, "", "Для регистрации введите ваше имя"));
             registrationSteps.put(chatId, "name");
         }
     }
@@ -332,13 +316,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void handleRegistrationSteps(long chatId, String messageText) throws IOException, TelegramApiException {
         String step = registrationSteps.get(chatId);
         if (step.equals("name")) {
-            sendMessage(chatId, formatDescription("", "Введите ваш телефон"));
+            sendMessage(chatId, formatDescription(null, "", "Введите ваш телефон"));
             registrationSteps.put(chatId, "phone:" + messageText);
         } else if (step.startsWith("phone:")) {
             String name = step.split(":")[1];
             String phone = messageText;
             saveUser(chatId, name, phone);
-            sendMessage(chatId, formatDescription("", "Регистрация прошла успешно."));
+            sendMessage(chatId, formatDescription(null, "", "Регистрация прошла успешно."));
             registrationSteps.remove(chatId);
             sendBackButton(chatId);
         }
@@ -368,18 +352,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleMaskRedDescription(long chatId) throws TelegramApiException {
+    private void handleMaskRedDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String maskLoveScenarioDescription = getMaskDescription(maskLoveScenario, MASKS_RED_DESCRIPTION_FILE_PATH);
-            String maskKarmicTaskDescription = getMaskDescription(maskKarmicTask, MASKS_RED_DESCRIPTION_FILE_PATH);
-            String maskLoveTransmissionDescription = getMaskDescription(maskLoveTransmission, MASKS_RED_DESCRIPTION_FILE_PATH);
+            String maskLoveScenarioDescription = getMaskDescription(userData.getMaskLoveScenario(), MASKS_RED_DESCRIPTION_FILE_PATH);
+            String maskKarmicTaskDescription = getMaskDescription(userData.getMaskKarmicTask(), MASKS_RED_DESCRIPTION_FILE_PATH);
+            String maskLoveTransmissionDescription = getMaskDescription(userData.getMaskLoveTransmission(), MASKS_RED_DESCRIPTION_FILE_PATH);
 
-            sendFormattedMessage(chatId, "Маски 🔴", maskLoveScenarioDescription);
-            sendFormattedMessage(chatId, "Маски 🔴", maskKarmicTaskDescription);
-            sendFormattedMessage(chatId, "Маски 🔴", maskLoveTransmissionDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🔴", maskLoveScenarioDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🔴", maskKarmicTaskDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🔴", maskLoveTransmissionDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -388,18 +372,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleMaskGreenDescription(long chatId) throws TelegramApiException {
+    private void handleMaskGreenDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String maskFinancialHealingDescription = getMaskDescription(maskFinancialHealing, MASKS_GREEN_DESCRIPTION_FILE_PATH);
-            String maskTalentRealizationDescription = getMaskDescription(maskTalentRealization, MASKS_GREEN_DESCRIPTION_FILE_PATH);
-            String maskScenarioTransmissionDescription = getMaskDescription(maskScenarioTransmission, MASKS_GREEN_DESCRIPTION_FILE_PATH);
+            String maskFinancialHealingDescription = getMaskDescription(userData.getMaskFinancialHealing(), MASKS_GREEN_DESCRIPTION_FILE_PATH);
+            String maskTalentRealizationDescription = getMaskDescription(userData.getMaskTalentRealization(), MASKS_GREEN_DESCRIPTION_FILE_PATH);
+            String maskScenarioTransmissionDescription = getMaskDescription(userData.getMaskScenarioTransmission(), MASKS_GREEN_DESCRIPTION_FILE_PATH);
 
-            sendFormattedMessage(chatId, "Маски 🟢", maskFinancialHealingDescription);
-            sendFormattedMessage(chatId, "Маски 🟢", maskTalentRealizationDescription);
-            sendFormattedMessage(chatId, "Маски 🟢", maskScenarioTransmissionDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🟢", maskFinancialHealingDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🟢", maskTalentRealizationDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🟢", maskScenarioTransmissionDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -408,18 +392,18 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleMaskPurpleDescription(long chatId) throws TelegramApiException {
+    private void handleMaskPurpleDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String maskHealingLoveScenarioDescription = getMaskDescription(maskHealingLoveScenario, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
-            String maskKarmicDestinyDescription = getMaskDescription(maskKarmicDestiny, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
-            String maskHeartLineDescription = getMaskDescription(maskHeartLine, MASKS_PURPLE_DESCRIPTION_FILE_PATH);
+            String maskHealingLoveScenarioDescription = getMaskDescription(userData.getMaskHealingLoveScenario(), MASKS_PURPLE_DESCRIPTION_FILE_PATH);
+            String maskKarmicDestinyDescription = getMaskDescription(userData.getMaskKarmicDestiny(), MASKS_PURPLE_DESCRIPTION_FILE_PATH);
+            String maskHeartLineDescription = getMaskDescription(userData.getMaskHeartLine(), MASKS_PURPLE_DESCRIPTION_FILE_PATH);
 
-            sendFormattedMessage(chatId, "Маски 🟣", maskHealingLoveScenarioDescription);
-            sendFormattedMessage(chatId, "Маски 🟣", maskKarmicDestinyDescription);
-            sendFormattedMessage(chatId, "Маски 🟣", maskHeartLineDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🟣", maskHealingLoveScenarioDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🟣", maskKarmicDestinyDescription);
+            sendFormattedMessage(chatId, userData, "Маски 🟣", maskHeartLineDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -428,13 +412,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleShadowDescription(long chatId, int shadow, String filePath) throws TelegramApiException {
+    private void handleShadowDescription(long chatId, UserData userData, int shadow, String filePath) throws TelegramApiException {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
             String shadowDescription = getDescription(shadow, filePath);
-            sendFormattedMessage(chatId, "Тень", shadowDescription);
+            sendFormattedMessage(chatId, userData, "Тень", shadowDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -443,13 +427,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleTypageDescription(long chatId) throws TelegramApiException {
+    private void handleTypageDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
-            String typageDescription = getDescription(typage, TYPAGE_FILE_PATH);
-            sendFormattedMessage(chatId, "Типаж", typageDescription);
+            String typageDescription = getDescription(userData.getTypage(), TYPAGE_FILE_PATH);
+            sendFormattedMessage(chatId, userData, "Типаж", typageDescription);
 
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -458,8 +442,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendFormattedMessage(long chatId, String buttonName, String text) throws TelegramApiException {
-        String formattedText = formatDescription(text, buttonName);
+    private void sendFormattedMessage(long chatId, UserData userData, String buttonName, String text) throws TelegramApiException {
+        String formattedText = formatDescription(userData, text, buttonName);
         sendLongMessage(chatId, formattedText);
     }
 
@@ -536,13 +520,13 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendDescription(long chatId, int key, String filePath, String buttonName) {
+    private void sendDescription(long chatId, UserData userData, int key, String filePath, String buttonName) {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
             String description = getDescription(key, filePath);
-            String formattedDescription = formatDescription(description, buttonName);
+            String formattedDescription = formatDescription(userData, description, buttonName);
             sendMessage(chatId, formattedDescription);
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -554,17 +538,17 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendKeyDestinyRealizationDescription(long chatId, int key, String filePath, String buttonName) {
+    private void sendKeyDestinyRealizationDescription(long chatId, UserData userData, int key, String filePath, String buttonName) {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
             if (isKeyInFile(key, filePath)) {
                 String description = getDescription(key, filePath);
-                String formattedDescription = formatDescription(description, buttonName);
+                String formattedDescription = formatDescription(userData, description, buttonName);
                 sendMessage(chatId, formattedDescription);
             } else {
-                sendMessage(chatId, formatDescription("Описание для данного ключа не найдено.", buttonName));
+                sendMessage(chatId, formatDescription(userData, "Описание для данного ключа не найдено.", buttonName));
             }
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -576,17 +560,17 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendKeyTalentRealizationDescription(long chatId, int key, String filePath, String buttonName) {
+    private void sendKeyTalentRealizationDescription(long chatId, UserData userData, int key, String filePath, String buttonName) {
         try {
-            BufferedImage image = drawEsotericImage(selectedDay, selectedMonth, selectedYear);
+            BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
 
             if (isKeyInFile(key, filePath)) {
                 String description = getDescription(key, filePath);
-                String formattedDescription = formatDescription(description, buttonName);
+                String formattedDescription = formatDescription(userData, description, buttonName);
                 sendMessage(chatId, formattedDescription);
             } else {
-                sendMessage(chatId, formatDescription("Описание для данного ключа не найдено.", buttonName));
+                sendMessage(chatId, formatDescription(userData, "Описание для данного ключа не найдено.", buttonName));
             }
             showDescriptionButtons(chatId);
         } catch (IOException e) {
@@ -608,14 +592,14 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return false;
     }
 
-    private String formatDescription(String description, String buttonName) {
+    private String formatDescription(UserData userData, String description, String buttonName) {
         StringBuilder formattedDescription = new StringBuilder();
         formattedDescription.append(buttonName);
 
         // Проверка, что дата выбрана правильно
-        if (selectedDay != 0 && selectedMonth != 0 && selectedYear != 0) {
+        if (userData != null && userData.getSelectedDay() != 0 && userData.getSelectedMonth() != 0 && userData.getSelectedYear() != 0) {
             formattedDescription.append(" для даты рождения ")
-                    .append(String.format("%02d.%02d.%d", selectedDay, selectedMonth, selectedYear))
+                    .append(String.format("%02d.%02d.%d", userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear()))
                     .append(":\n\n");
         } else {
             formattedDescription.append(":\n\n");
@@ -915,7 +899,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return applyMinus22Rule(sum);
     }
 
-    private BufferedImage drawEsotericImage(int day, int month, int year) throws IOException {
+    private BufferedImage drawEsotericImage(UserData userData) throws IOException {
         int width = 1000;
         int height = 1000;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -927,54 +911,54 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2));
 
-        int alterEgo = applyMinus22Rule(day);
-        this.alterEgo = alterEgo;
-        int destinyKey = month;
-        this.destinyKey = destinyKey;
-        int talentKey = sumOfDigits(year);
-        this.talentKey = talentKey;
+        int alterEgo = applyMinus22Rule(userData.getSelectedDay());
+        userData.setAlterEgo(alterEgo);
+        int destinyKey = userData.getSelectedMonth();
+        userData.setDestinyKey(destinyKey);
+        int talentKey = sumOfDigits(userData.getSelectedYear());
+        userData.setTalentKey(talentKey);
 
         int centerPersonality = calculateSoulKey(alterEgo, talentKey);
-        this.centerPersonality = centerPersonality;
+        userData.setCenterPersonality(centerPersonality);
         int centerDestiny = calculateSoulKey(alterEgo, destinyKey);
-        this.centerDestiny = centerDestiny;
+        userData.setCenterDestiny(centerDestiny);
         int centerFamilyPrograms = calculateSoulKey(talentKey, destinyKey);
-        this.centerFamilyPrograms = centerFamilyPrograms;
+        userData.setCenterFamilyPrograms(centerFamilyPrograms);
 
-        maskLoveScenario = calculateSoulKey(centerPersonality, alterEgo);
-        maskTalentRealization = calculateSoulKey(centerPersonality, talentKey);
-        maskKarmicTask = calculateSoulKey(alterEgo, centerDestiny);
-        maskHealingLoveScenario = calculateSoulKey(centerDestiny, centerFamilyPrograms);
-        maskKarmicDestiny = calculateSoulKey(centerDestiny, destinyKey);
-        maskFinancialHealing = calculateSoulKey(centerFamilyPrograms, destinyKey);
-        maskHeartLine = calculateSoulKey(centerFamilyPrograms, centerPersonality);
-        maskLoveTransmission = calculateSoulKey(centerPersonality, centerDestiny);
-        maskScenarioTransmission = calculateSoulKey(talentKey, centerFamilyPrograms);
+        userData.setMaskLoveScenario(calculateSoulKey(centerPersonality, alterEgo));
+        userData.setMaskTalentRealization(calculateSoulKey(centerPersonality, talentKey));
+        userData.setMaskKarmicTask(calculateSoulKey(alterEgo, centerDestiny));
+        userData.setMaskHealingLoveScenario(calculateSoulKey(centerDestiny, centerFamilyPrograms));
+        userData.setMaskKarmicDestiny(calculateSoulKey(centerDestiny, destinyKey));
+        userData.setMaskFinancialHealing(calculateSoulKey(centerFamilyPrograms, destinyKey));
+        userData.setMaskHeartLine(calculateSoulKey(centerFamilyPrograms, centerPersonality));
+        userData.setMaskLoveTransmission(calculateSoulKey(centerPersonality, centerDestiny));
+        userData.setMaskScenarioTransmission(calculateSoulKey(talentKey, centerFamilyPrograms));
 
-        shadow1 = calculateShadow(maskLoveScenario, maskKarmicTask, maskLoveTransmission);
-        shadow2 = calculateShadow(maskTalentRealization, maskHeartLine, maskScenarioTransmission);
-        shadow3 = calculateShadow(maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing);
-        typage = calculateTypage(shadow1, shadow2, shadow3);
+        userData.setShadow1(calculateShadow(userData.getMaskLoveScenario(), userData.getMaskKarmicTask(), userData.getMaskLoveTransmission()));
+        userData.setShadow2(calculateShadow(userData.getMaskTalentRealization(), userData.getMaskHeartLine(), userData.getMaskScenarioTransmission()));
+        userData.setShadow3(calculateShadow(userData.getMaskHealingLoveScenario(), userData.getMaskKarmicDestiny(), userData.getMaskFinancialHealing()));
+        userData.setTypage(calculateTypage(userData.getShadow1(), userData.getShadow2(), userData.getShadow3()));
 
-        int assemblyPoint = calculateAssemblyPoint(destinyKey, talentKey, centerFamilyPrograms, centerPersonality, centerDestiny);
-        int incarnationProfile = calculateIncarnationProfile(shadow1, shadow2, shadow3, typage);
+        int assemblyPoint = calculateAssemblyPoint(userData.getDestinyKey(), userData.getTalentKey(), userData.getCenterFamilyPrograms(), userData.getCenterPersonality(), userData.getCenterDestiny());
+        userData.setAssemblyPoint(assemblyPoint);
+        int incarnationProfile = calculateIncarnationProfile(userData.getShadow1(), userData.getShadow2(), userData.getShadow3(), userData.getTypage());
+        userData.setIncarnationProfile(incarnationProfile);
 
-        int resource = calculateResource(day, month, year);
-        int quest = calculateQuest(day, month, year);
+        int resource = calculateResource(userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear());
+        userData.setResource(resource);
+        int quest = calculateQuest(userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear());
+        userData.setQuest(quest);
 
-        drawTrianglesAndElements(g2d, alterEgo, destinyKey, talentKey, centerPersonality, centerDestiny, centerFamilyPrograms,
-                maskLoveScenario, maskTalentRealization, maskKarmicTask, maskHealingLoveScenario, maskKarmicDestiny, maskFinancialHealing, maskHeartLine, maskLoveTransmission, maskScenarioTransmission,
-                shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile, resource, quest);
+        drawTrianglesAndElements(g2d, userData);
 
-        drawSmallTrianglesAndText(g2d, shadow1, shadow2, shadow3, typage, assemblyPoint, incarnationProfile, resource, quest);
+        drawSmallTrianglesAndText(g2d, userData);
 
         g2d.dispose();
         return image;
     }
 
-    private void drawTrianglesAndElements(Graphics2D g2d, int alterEgo, int destinyKey, int talentKey, int centerPersonality, int centerDestiny, int centerFamilyPrograms,
-                                          int maskLoveScenario, int maskTalentRealization, int maskKarmicTask, int maskHealingLoveScenario, int maskKarmicDestiny, int maskFinancialHealing, int maskHeartLine, int maskLoveTransmission, int maskScenarioTransmission,
-                                          int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile, int resource, int quest) {
+    private void drawTrianglesAndElements(Graphics2D g2d, UserData userData) {
         int[] xPoints = {400, 100, 700};
         int[] yPoints = {100, 700, 700};
 
@@ -985,23 +969,23 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawTriangle(g2d, 550, 400, 400, 700, 700, 700, new Color(128, 0, 128), 2);
         drawTriangle(g2d, 400, 700, 250, 400, 550, 400, Color.WHITE, 2);
 
-        drawText(g2d, Integer.toString(alterEgo), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(destinyKey), 705, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(talentKey), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getAlterEgo()), 385, 85, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getDestinyKey()), 705, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getTalentKey()), 70, 700, new Font("Arial", Font.BOLD, 20), Color.BLACK);
 
-        drawText(g2d, Integer.toString(centerPersonality), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(centerDestiny), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(centerFamilyPrograms), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getCenterPersonality()), 230, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getCenterDestiny()), 560, 400, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getCenterFamilyPrograms()), 390, 720, new Font("Arial", Font.BOLD, 20), Color.BLACK);
 
-        drawText(g2d, Integer.toString(maskLoveScenario), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskTalentRealization), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskKarmicTask), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskHealingLoveScenario), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskKarmicDestiny), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskFinancialHealing), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskHeartLine), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskLoveTransmission), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK);
-        drawText(g2d, Integer.toString(maskScenarioTransmission), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskLoveScenario()), 300, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskTalentRealization()), 150, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskKarmicTask()), 480, 240, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskHealingLoveScenario()), 450, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskKarmicDestiny()), 640, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskFinancialHealing()), 540, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskHeartLine()), 300, 540, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskLoveTransmission()), 390, 380, new Font("Arial", Font.BOLD, 20), Color.BLACK);
+        drawText(g2d, Integer.toString(userData.getMaskScenarioTransmission()), 240, 680, new Font("Arial", Font.BOLD, 20), Color.BLACK);
 
         drawText(g2d, "Альтер-Эго", 370, 65, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Ключ реализации", 690, 720, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
@@ -1022,44 +1006,44 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         drawText(g2d, "Маска передачи любви", 350, 393, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
         drawText(g2d, "Маска передачи сценария", 190, 695, new Font("Arial", Font.PLAIN, 12), Color.BLACK);
 
-        drawText(g2d, "1-я Тень: " + shadow1, 50, 50, new Font("Arial", Font.BOLD, 20), Color.RED);
-        drawText(g2d, "2-я Тень: " + shadow2, 50, 80, new Font("Arial", Font.BOLD, 20), Color.RED);
-        drawText(g2d, "3-я Тень: " + shadow3, 50, 110, new Font("Arial", Font.BOLD, 20), Color.RED);
+        drawText(g2d, "1-я Тень: " + userData.getShadow1(), 50, 50, new Font("Arial", Font.BOLD, 20), Color.RED);
+        drawText(g2d, "2-я Тень: " + userData.getShadow2(), 50, 80, new Font("Arial", Font.BOLD, 20), Color.RED);
+        drawText(g2d, "3-я Тень: " + userData.getShadow3(), 50, 110, new Font("Arial", Font.BOLD, 20), Color.RED);
 
-        drawText(g2d, "Типаж: " + typage, 50, 140, new Font("Arial", Font.BOLD, 20), Color.RED);
-        drawText(g2d, "Точка сборки: " + assemblyPoint, 50, 170, new Font("Arial", Font.BOLD, 20), Color.BLUE);
-        drawText(g2d, "Инкарнационный профиль: " + incarnationProfile, 50, 200, new Font("Arial", Font.BOLD, 20), Color.MAGENTA);
-        drawText(g2d, "Ресурс: " + resource, 50, 230, new Font("Arial", Font.BOLD, 20), Color.GREEN);
-        drawText(g2d, "Квест: " + quest, 50, 260, new Font("Arial", Font.BOLD, 20), Color.ORANGE);
+        drawText(g2d, "Типаж: " + userData.getTypage(), 50, 140, new Font("Arial", Font.BOLD, 20), Color.RED);
+        drawText(g2d, "Точка сборки: " + userData.getAssemblyPoint(), 50, 170, new Font("Arial", Font.BOLD, 20), Color.BLUE);
+        drawText(g2d, "Инкарнационный профиль: " + userData.getIncarnationProfile(), 50, 200, new Font("Arial", Font.BOLD, 20), Color.MAGENTA);
+        drawText(g2d, "Ресурс: " + userData.getResource(), 50, 230, new Font("Arial", Font.BOLD, 20), Color.GREEN);
+        drawText(g2d, "Квест: " + userData.getQuest(), 50, 260, new Font("Arial", Font.BOLD, 20), Color.ORANGE);
     }
 
-    private void drawSmallTrianglesAndText(Graphics2D g2d, int shadow1, int shadow2, int shadow3, int typage, int assemblyPoint, int incarnationProfile, int resource, int quest) {
+    private void drawSmallTrianglesAndText(Graphics2D g2d, UserData userData) {
         int triangleSize = 20;
         int startX = 50;
         int startY = 750;
 
         drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(255, 0, 255));
         drawText(g2d, "Любовь/Отношения/Коммуникации", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-        drawText(g2d, "1-я Тень - " + shadow1, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "1-я Тень - " + userData.getShadow1(), startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
         drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(0, 255, 0));
         drawText(g2d, "Деньги/Карьера", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-        drawText(g2d, "2-я Тень - " + shadow2, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "2-я Тень - " + userData.getShadow2(), startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
         drawSmallTriangle(g2d, startX, startY, triangleSize, new Color(128, 0, 128));
         drawText(g2d, "Предназначение/Кармическая задача", startX + 30, startY + 15, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-        drawText(g2d, "3-я Тень - " + shadow3, startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "3-я Тень - " + userData.getShadow3(), startX + 30, startY + 30, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
         startY += 60;
         drawSmallTriangle(g2d, startX + 300, startY - 180, triangleSize, Color.WHITE);
-        drawText(g2d, "Типаж - " + typage, startX + 320, startY - 165, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Типаж - " + userData.getTypage(), startX + 320, startY - 165, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
 
-        drawText(g2d, "Точка сборки - " + assemblyPoint, startX + 30, startY + 90, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-        drawText(g2d, "Инкарнационный профиль - " + incarnationProfile, startX + 30, startY + 110, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-        drawText(g2d, "Ресурс - " + resource, startX + 30, startY + 130, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
-        drawText(g2d, "Квест - " + quest, startX + 30, startY + 150, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Точка сборки - " + userData.getAssemblyPoint(), startX + 30, startY + 90, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Инкарнационный профиль - " + userData.getIncarnationProfile(), startX + 30, startY + 110, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Ресурс - " + userData.getResource(), startX + 30, startY + 130, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
+        drawText(g2d, "Квест - " + userData.getQuest(), startX + 30, startY + 150, new Font("Arial", Font.PLAIN, 14), Color.BLACK);
     }
 
     private void drawSmallTriangle(Graphics2D g2d, int x, int y, int size, Color color) {
@@ -1130,6 +1114,243 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             botsApi.registerBot(bot);
         } catch (TelegramApiException | IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static class UserData {
+        private int selectedDay;
+        private int selectedMonth;
+        private int selectedYear;
+        private int alterEgo;
+        private int centerPersonality;
+        private int centerDestiny;
+        private int centerFamilyPrograms;
+        private int destinyKey;
+        private int talentKey;
+        private int maskLoveScenario;
+        private int maskKarmicTask;
+        private int maskLoveTransmission;
+        private int maskFinancialHealing;
+        private int maskTalentRealization;
+        private int maskScenarioTransmission;
+        private int maskHealingLoveScenario;
+        private int maskKarmicDestiny;
+        private int maskHeartLine;
+        private int shadow1;
+        private int shadow2;
+        private int shadow3;
+        private int typage;
+        private int resource;
+        private int quest;
+        private int assemblyPoint;
+        private int incarnationProfile;
+
+        public int getSelectedDay() {
+            return selectedDay;
+        }
+
+        public void setSelectedDay(int selectedDay) {
+            this.selectedDay = selectedDay;
+        }
+
+        public int getSelectedMonth() {
+            return selectedMonth;
+        }
+
+        public void setSelectedMonth(int selectedMonth) {
+            this.selectedMonth = selectedMonth;
+        }
+
+        public int getSelectedYear() {
+            return selectedYear;
+        }
+
+        public void setSelectedYear(int selectedYear) {
+            this.selectedYear = selectedYear;
+        }
+
+        public int getAlterEgo() {
+            return alterEgo;
+        }
+
+        public void setAlterEgo(int alterEgo) {
+            this.alterEgo = alterEgo;
+        }
+
+        public int getCenterPersonality() {
+            return centerPersonality;
+        }
+
+        public void setCenterPersonality(int centerPersonality) {
+            this.centerPersonality = centerPersonality;
+        }
+
+        public int getCenterDestiny() {
+            return centerDestiny;
+        }
+
+        public void setCenterDestiny(int centerDestiny) {
+            this.centerDestiny = centerDestiny;
+        }
+
+        public int getCenterFamilyPrograms() {
+            return centerFamilyPrograms;
+        }
+
+        public void setCenterFamilyPrograms(int centerFamilyPrograms) {
+            this.centerFamilyPrograms = centerFamilyPrograms;
+        }
+
+        public int getDestinyKey() {
+            return destinyKey;
+        }
+
+        public void setDestinyKey(int destinyKey) {
+            this.destinyKey = destinyKey;
+        }
+
+        public int getTalentKey() {
+            return talentKey;
+        }
+
+        public void setTalentKey(int talentKey) {
+            this.talentKey = talentKey;
+        }
+
+        public int getMaskLoveScenario() {
+            return maskLoveScenario;
+        }
+
+        public void setMaskLoveScenario(int maskLoveScenario) {
+            this.maskLoveScenario = maskLoveScenario;
+        }
+
+        public int getMaskKarmicTask() {
+            return maskKarmicTask;
+        }
+
+        public void setMaskKarmicTask(int maskKarmicTask) {
+            this.maskKarmicTask = maskKarmicTask;
+        }
+
+        public int getMaskLoveTransmission() {
+            return maskLoveTransmission;
+        }
+
+        public void setMaskLoveTransmission(int maskLoveTransmission) {
+            this.maskLoveTransmission = maskLoveTransmission;
+        }
+
+        public int getMaskFinancialHealing() {
+            return maskFinancialHealing;
+        }
+
+        public void setMaskFinancialHealing(int maskFinancialHealing) {
+            this.maskFinancialHealing = maskFinancialHealing;
+        }
+
+        public int getMaskTalentRealization() {
+            return maskTalentRealization;
+        }
+
+        public void setMaskTalentRealization(int maskTalentRealization) {
+            this.maskTalentRealization = maskTalentRealization;
+        }
+
+        public int getMaskScenarioTransmission() {
+            return maskScenarioTransmission;
+        }
+
+        public void setMaskScenarioTransmission(int maskScenarioTransmission) {
+            this.maskScenarioTransmission = maskScenarioTransmission;
+        }
+
+        public int getMaskHealingLoveScenario() {
+            return maskHealingLoveScenario;
+        }
+
+        public void setMaskHealingLoveScenario(int maskHealingLoveScenario) {
+            this.maskHealingLoveScenario = maskHealingLoveScenario;
+        }
+
+        public int getMaskKarmicDestiny() {
+            return maskKarmicDestiny;
+        }
+
+        public void setMaskKarmicDestiny(int maskKarmicDestiny) {
+            this.maskKarmicDestiny = maskKarmicDestiny;
+        }
+
+        public int getMaskHeartLine() {
+            return maskHeartLine;
+        }
+
+        public void setMaskHeartLine(int maskHeartLine) {
+            this.maskHeartLine = maskHeartLine;
+        }
+
+        public int getShadow1() {
+            return shadow1;
+        }
+
+        public void setShadow1(int shadow1) {
+            this.shadow1 = shadow1;
+        }
+
+        public int getShadow2() {
+            return shadow2;
+        }
+
+        public void setShadow2(int shadow2) {
+            this.shadow2 = shadow2;
+        }
+
+        public int getShadow3() {
+            return shadow3;
+        }
+
+        public void setShadow3(int shadow3) {
+            this.shadow3 = shadow3;
+        }
+
+        public int getTypage() {
+            return typage;
+        }
+
+        public void setTypage(int typage) {
+            this.typage = typage;
+        }
+
+        public int getResource() {
+            return resource;
+        }
+
+        public void setResource(int resource) {
+            this.resource = resource;
+        }
+
+        public int getQuest() {
+            return quest;
+        }
+
+        public void setQuest(int quest) {
+            this.quest = quest;
+        }
+
+        public int getAssemblyPoint() {
+            return assemblyPoint;
+        }
+
+        public void setAssemblyPoint(int assemblyPoint) {
+            this.assemblyPoint = assemblyPoint;
+        }
+
+        public int getIncarnationProfile() {
+            return incarnationProfile;
+        }
+
+        public void setIncarnationProfile(int incarnationProfile) {
+            this.incarnationProfile = incarnationProfile;
         }
     }
 }
