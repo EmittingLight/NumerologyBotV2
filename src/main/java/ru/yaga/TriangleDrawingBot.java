@@ -231,10 +231,10 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         StringBuilder description = new StringBuilder();
         if (descriptions.containsKey(userData.getDestinyKey())) {
-            description.append("Предназначение: ").append(descriptions.get(userData.getDestinyKey())).append("\n\n");
+            description.append("Ключ Реализации Предназначения: ").append(descriptions.get(userData.getDestinyKey())).append("\n\n");
         }
         if (descriptions.containsKey(userData.getTalentKey())) {
-            description.append("Талант: ").append(descriptions.get(userData.getTalentKey())).append("\n\n");
+            description.append("Ключ Реализации Таланта: ").append(descriptions.get(userData.getTalentKey())).append("\n\n");
         }
         if (descriptions.containsKey(userData.getCenterPersonality())) {
             description.append("Центр Личности: ").append(descriptions.get(userData.getCenterPersonality())).append("\n\n");
