@@ -44,6 +44,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String INCARNATION_PROFILE_FILE_PATH = "incarnationProfile.txt";
     private static final String RESOURCE_FILE_PATH = "resource.txt";
     private static final String QUEST_FILE_PATH = "quest.txt"; // добавили путь к файлу с квестами
+    private static final String ILLNESSES_FILE_PATH = "illnesses.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
 
@@ -130,6 +131,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleResourceDescription(chatId, userData);
                 } else if (callbackData.equals("arcanes_planets_description")) {
                     handleArcanaPlanetsDescription(chatId, userData);
+                } else if (callbackData.equals("diseases_description")) {
+                    handleDiseasesDescription(chatId, userData);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -253,6 +256,55 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return description.toString();
     }
 
+    private void handleDiseasesDescription(long chatId, UserData userData) throws TelegramApiException {
+        try {
+            String diseasesDescription = getDiseasesDescription(userData);
+            BufferedImage image = drawEsotericImage(userData);
+            sendImage(chatId, image);
+            sendFormattedMessage(chatId, userData, "Заболевания", diseasesDescription);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание заболеваний.");
+        }
+        showDescriptionButtons(chatId);
+    }
+
+    private String getDiseasesDescription(UserData userData) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(ILLNESSES_FILE_PATH));
+        Map<Integer, String> descriptions = new HashMap<>();
+
+        for (String line : lines) {
+            String[] parts = line.split(": ", 2);
+            if (parts.length == 2) {
+                try {
+                    int key = Integer.parseInt(parts[0].trim());
+                    String value = parts[1].trim();
+                    descriptions.put(key, value);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid key format in line: " + line);
+                }
+            } else {
+                System.err.println("Invalid line format: " + line);
+            }
+        }
+
+        StringBuilder description = new StringBuilder();
+        if (descriptions.containsKey(userData.getMaskHealingLoveScenario())) {
+            description.append("Маска Исцеления любовного сценария: ").append(descriptions.get(userData.getMaskHealingLoveScenario())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getMaskKarmicDestiny())) {
+            description.append("Маска Кармического Предназначения: ").append(descriptions.get(userData.getMaskKarmicDestiny())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getMaskHeartLine())) {
+            description.append("Маска линии Сердца: ").append(descriptions.get(userData.getMaskFinancialHealing())).append("\n\n");
+        }
+
+        if (description.length() == 0) {
+            description.append("Описание для указанных масок не найдено.");
+        }
+
+        return description.toString();
+    }
 
     private void handleQuestDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
