@@ -451,16 +451,33 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private void handlePlaceOfPowerDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
-            String placeOfPowerDescription = getPlaceOfPowerDescription(userData);
+            // 1. Отправка изображения
             BufferedImage image = drawEsotericImage(userData);
             sendImage(chatId, image);
-            sendFormattedMessage(chatId, userData, "Места Силы", placeOfPowerDescription);
+
+            // 2. Отправка "Места Силы для даты рождения 24.01.1974"
+            String placeOfPowerMessage = String.format("Места Силы для даты рождения %02d.%02d.%d:",
+                    userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear());
+            sendMessage(chatId, placeOfPowerMessage);
+
+            // 3. Отправка текста из файла instructionsForThePlaceOfPower.txt
+            String instructions = new String(Files.readAllBytes(Paths.get(INSTRUCTIONS_FOR_PLACE_OF_POWER_FILE_PATH)));
+            sendLongMessage(chatId, instructions);
+
+            // 4. Отправка текста из файла thePlaceOfPower.txt
+            String placeOfPowerDescription = getPlaceOfPowerDescription(userData);
+            sendLongMessage(chatId, placeOfPowerDescription);
+
         } catch (IOException e) {
             e.printStackTrace();
             sendMessage(chatId, "Не удалось загрузить описание мест силы.");
         }
+
+        // Отображение кнопок после отправки описания
         showDescriptionButtons(chatId);
     }
+
+
 
     private String getPlaceOfPowerDescription(UserData userData) throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(THE_PLACE_OF_POWER_FILE_PATH));
