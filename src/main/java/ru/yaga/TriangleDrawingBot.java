@@ -43,8 +43,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String ASSEMBLAGE_POINT_FILE_PATH = "assemblagePoint.txt";
     private static final String INCARNATION_PROFILE_FILE_PATH = "incarnationProfile.txt";
     private static final String RESOURCE_FILE_PATH = "resource.txt";
-    private static final String QUEST_FILE_PATH = "quest.txt"; // добавили путь к файлу с квестами
+    private static final String QUEST_FILE_PATH = "quest.txt";
     private static final String ILLNESSES_FILE_PATH = "illnesses.txt";
+    private static final String TALENTS_FILE_PATH = "talents.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
 
@@ -133,6 +134,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleArcanaPlanetsDescription(chatId, userData);
                 } else if (callbackData.equals("diseases_description")) {
                     handleDiseasesDescription(chatId, userData);
+                } else if (callbackData.equals("talents_description")) {
+                    handleTalentsDescription(chatId, userData);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -218,7 +221,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         Map<Integer, String> descriptions = new HashMap<>();
 
         for (String line : lines) {
-            String[] parts = line.split(": ", 2);  // Ограничиваем split на два элемента
+            String[] parts = line.split(": ", 2);
             if (parts.length == 2) {
                 try {
                     int key = Integer.parseInt(parts[0].trim());
@@ -407,6 +410,33 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
     private String getResourceDescription(int key) throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(RESOURCE_FILE_PATH));
+        for (String line : lines) {
+            if (line.startsWith(Integer.toString(key))) {
+                return line.substring(line.indexOf(' ') + 1);
+            }
+        }
+        return "Описание не найдено для значения: " + key;
+    }
+
+    private void handleTalentsDescription(long chatId, UserData userData) throws TelegramApiException {
+        try {
+            int talentKey = userData.getTalentKey();
+            String talentDescription = getTalentDescription(talentKey);
+
+            BufferedImage image = drawEsotericImage(userData);
+            sendImage(chatId, image);
+
+            String formattedText = formatDescription(userData, talentDescription, "Таланты");
+            sendMessage(chatId, formattedText);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание талантов.");
+        }
+        showDescriptionButtons(chatId);
+    }
+
+    private String getTalentDescription(int key) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(TALENTS_FILE_PATH));
         for (String line : lines) {
             if (line.startsWith(Integer.toString(key))) {
                 return line.substring(line.indexOf(' ') + 1);
@@ -708,7 +738,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         StringBuilder formattedDescription = new StringBuilder();
         formattedDescription.append(buttonName);
 
-        // Проверка, что дата выбрана правильно
         if (userData != null && userData.getSelectedDay() != 0 && userData.getSelectedMonth() != 0 && userData.getSelectedYear() != 0) {
             formattedDescription.append(" для даты рождения ")
                     .append(String.format("%02d.%02d.%d", userData.getSelectedDay(), userData.getSelectedMonth(), userData.getSelectedYear()))
@@ -1469,5 +1498,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         }
     }
 }
+
 
 
