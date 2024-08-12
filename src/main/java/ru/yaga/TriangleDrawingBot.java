@@ -46,6 +46,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private static final String QUEST_FILE_PATH = "quest.txt";
     private static final String ILLNESSES_FILE_PATH = "illnesses.txt";
     private static final String TALENTS_FILE_PATH = "talents.txt";
+    private static final String THE_PLACE_OF_POWER_FILE_PATH = "thePlaceOfPower.txt";
+    private static final String INSTRUCTIONS_FOR_PLACE_OF_POWER_FILE_PATH = "instructionsForThePlaceOfPower.txt";
     private static final String GREETING_MESSAGE = "Добро пожаловать в NumerologyBot!";
     private static final String IMAGE_PATH = "pic1.jpg";
 
@@ -136,6 +138,8 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleDiseasesDescription(chatId, userData);
                 } else if (callbackData.equals("talents_description")) {
                     handleTalentsDescription(chatId, userData);
+                } else if (callbackData.equals("places_of_power_description")) {
+                    handlePlaceOfPowerDescription(chatId, userData);
                 } else {
                     switch (callbackData) {
                         case "register":
@@ -445,6 +449,62 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
         return "Описание не найдено для значения: " + key;
     }
 
+    private void handlePlaceOfPowerDescription(long chatId, UserData userData) throws TelegramApiException {
+        try {
+            String placeOfPowerDescription = getPlaceOfPowerDescription(userData);
+            BufferedImage image = drawEsotericImage(userData);
+            sendImage(chatId, image);
+            sendFormattedMessage(chatId, userData, "Места Силы", placeOfPowerDescription);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание мест силы.");
+        }
+        showDescriptionButtons(chatId);
+    }
+
+    private String getPlaceOfPowerDescription(UserData userData) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(THE_PLACE_OF_POWER_FILE_PATH));
+        Map<Integer, String> descriptions = new HashMap<>();
+
+        for (String line : lines) {
+            String[] parts = line.split(": ", 2);
+            if (parts.length == 2) {
+                try {
+                    int key = Integer.parseInt(parts[0].trim());
+                    String value = parts[1].trim();
+                    descriptions.put(key, value);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid key format in line: " + line);
+                }
+            } else {
+                System.err.println("Invalid line format: " + line);
+            }
+        }
+
+        StringBuilder description = new StringBuilder();
+        if (descriptions.containsKey(userData.getDestinyKey())) {
+            description.append("Ключ Реализации Предназначения: ").append(descriptions.get(userData.getDestinyKey())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getTalentKey())) {
+            description.append("Ключ Реализации Таланта: ").append(descriptions.get(userData.getTalentKey())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterPersonality())) {
+            description.append("Центр Личности: ").append(descriptions.get(userData.getCenterPersonality())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterDestiny())) {
+            description.append("Центр Предназначения: ").append(descriptions.get(userData.getCenterDestiny())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterFamilyPrograms())) {
+            description.append("Центр Родовых Программ: ").append(descriptions.get(userData.getCenterFamilyPrograms())).append("\n\n");
+        }
+
+        if (description.length() == 0) {
+            description.append("Описание для мест силы не найдено.");
+        }
+
+        return description.toString();
+    }
+
     private void handleStartCommand(long chatId) throws IOException, TelegramApiException {
         if (isUserRegistered(chatId)) {
             sendMessage(chatId, formatDescription(null, "", "Вы уже зарегистрированы."));
@@ -651,7 +711,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     private void sendSupport(long chatId) {
         try {
             String support = new String(Files.readAllBytes(Paths.get(SUPPORT_FILE_PATH)));
-            sendMessage(chatId,support);
+            sendMessage(chatId, support);
             sendBackButton(chatId);
         } catch (IOException e) {
             e.printStackTrace();
@@ -1242,7 +1302,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                 .chatId(String.valueOf(chatId))
                 .text(text)
                 .build();
-
         try {
             execute(message);
         } catch (TelegramApiException e) {
@@ -1253,41 +1312,39 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
     public static void main(String[] args) {
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            TriangleDrawingBot bot = new TriangleDrawingBot();
-            bot.createGreetingFileIfNotExists();
-            botsApi.registerBot(bot);
-        } catch (TelegramApiException | IOException e) {
+            botsApi.registerBot(new TriangleDrawingBot());
+        } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    private static class UserData {
+    private class UserData {
         private int selectedDay;
         private int selectedMonth;
         private int selectedYear;
         private int alterEgo;
+        private int destinyKey;
+        private int talentKey;
         private int centerPersonality;
         private int centerDestiny;
         private int centerFamilyPrograms;
-        private int destinyKey;
-        private int talentKey;
         private int maskLoveScenario;
-        private int maskKarmicTask;
-        private int maskLoveTransmission;
-        private int maskFinancialHealing;
         private int maskTalentRealization;
-        private int maskScenarioTransmission;
+        private int maskKarmicTask;
         private int maskHealingLoveScenario;
         private int maskKarmicDestiny;
+        private int maskFinancialHealing;
         private int maskHeartLine;
+        private int maskLoveTransmission;
+        private int maskScenarioTransmission;
         private int shadow1;
         private int shadow2;
         private int shadow3;
         private int typage;
-        private int resource;
-        private int quest;
         private int assemblyPoint;
         private int incarnationProfile;
+        private int resource;
+        private int quest;
 
         public int getSelectedDay() {
             return selectedDay;
@@ -1321,6 +1378,22 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             this.alterEgo = alterEgo;
         }
 
+        public int getDestinyKey() {
+            return destinyKey;
+        }
+
+        public void setDestinyKey(int destinyKey) {
+            this.destinyKey = destinyKey;
+        }
+
+        public int getTalentKey() {
+            return talentKey;
+        }
+
+        public void setTalentKey(int talentKey) {
+            this.talentKey = talentKey;
+        }
+
         public int getCenterPersonality() {
             return centerPersonality;
         }
@@ -1345,52 +1418,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             this.centerFamilyPrograms = centerFamilyPrograms;
         }
 
-        public int getDestinyKey() {
-            return destinyKey;
-        }
-
-        public void setDestinyKey(int destinyKey) {
-            this.destinyKey = destinyKey;
-        }
-
-        public int getTalentKey() {
-            return talentKey;
-        }
-
-        public void setTalentKey(int talentKey) {
-            this.talentKey = talentKey;
-        }
-
         public int getMaskLoveScenario() {
             return maskLoveScenario;
         }
 
         public void setMaskLoveScenario(int maskLoveScenario) {
             this.maskLoveScenario = maskLoveScenario;
-        }
-
-        public int getMaskKarmicTask() {
-            return maskKarmicTask;
-        }
-
-        public void setMaskKarmicTask(int maskKarmicTask) {
-            this.maskKarmicTask = maskKarmicTask;
-        }
-
-        public int getMaskLoveTransmission() {
-            return maskLoveTransmission;
-        }
-
-        public void setMaskLoveTransmission(int maskLoveTransmission) {
-            this.maskLoveTransmission = maskLoveTransmission;
-        }
-
-        public int getMaskFinancialHealing() {
-            return maskFinancialHealing;
-        }
-
-        public void setMaskFinancialHealing(int maskFinancialHealing) {
-            this.maskFinancialHealing = maskFinancialHealing;
         }
 
         public int getMaskTalentRealization() {
@@ -1401,12 +1434,12 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             this.maskTalentRealization = maskTalentRealization;
         }
 
-        public int getMaskScenarioTransmission() {
-            return maskScenarioTransmission;
+        public int getMaskKarmicTask() {
+            return maskKarmicTask;
         }
 
-        public void setMaskScenarioTransmission(int maskScenarioTransmission) {
-            this.maskScenarioTransmission = maskScenarioTransmission;
+        public void setMaskKarmicTask(int maskKarmicTask) {
+            this.maskKarmicTask = maskKarmicTask;
         }
 
         public int getMaskHealingLoveScenario() {
@@ -1425,12 +1458,36 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             this.maskKarmicDestiny = maskKarmicDestiny;
         }
 
+        public int getMaskFinancialHealing() {
+            return maskFinancialHealing;
+        }
+
+        public void setMaskFinancialHealing(int maskFinancialHealing) {
+            this.maskFinancialHealing = maskFinancialHealing;
+        }
+
         public int getMaskHeartLine() {
             return maskHeartLine;
         }
 
         public void setMaskHeartLine(int maskHeartLine) {
             this.maskHeartLine = maskHeartLine;
+        }
+
+        public int getMaskLoveTransmission() {
+            return maskLoveTransmission;
+        }
+
+        public void setMaskLoveTransmission(int maskLoveTransmission) {
+            this.maskLoveTransmission = maskLoveTransmission;
+        }
+
+        public int getMaskScenarioTransmission() {
+            return maskScenarioTransmission;
+        }
+
+        public void setMaskScenarioTransmission(int maskScenarioTransmission) {
+            this.maskScenarioTransmission = maskScenarioTransmission;
         }
 
         public int getShadow1() {
@@ -1465,22 +1522,6 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             this.typage = typage;
         }
 
-        public int getResource() {
-            return resource;
-        }
-
-        public void setResource(int resource) {
-            this.resource = resource;
-        }
-
-        public int getQuest() {
-            return quest;
-        }
-
-        public void setQuest(int quest) {
-            this.quest = quest;
-        }
-
         public int getAssemblyPoint() {
             return assemblyPoint;
         }
@@ -1495,6 +1536,22 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
 
         public void setIncarnationProfile(int incarnationProfile) {
             this.incarnationProfile = incarnationProfile;
+        }
+
+        public int getResource() {
+            return resource;
+        }
+
+        public void setResource(int resource) {
+            this.resource = resource;
+        }
+
+        public int getQuest() {
+            return quest;
+        }
+
+        public void setQuest(int quest) {
+            this.quest = quest;
         }
     }
 }
