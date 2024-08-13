@@ -140,7 +140,9 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
                     handleTalentsDescription(chatId, userData);
                 } else if (callbackData.equals("places_of_power_description")) {
                     handlePlaceOfPowerDescription(chatId, userData);
-                } else {
+                } else if (callbackData.equals("esoteric_abilities_description")) {
+                    handleEsotericAbilitiesDescription(chatId, userData);
+            } else {
                     switch (callbackData) {
                         case "register":
                             handleStartCommand(chatId);
@@ -205,6 +207,69 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
+
+    private void handleEsotericAbilitiesDescription(long chatId, UserData userData) throws TelegramApiException {
+        try {
+            // 1. Отправка изображения
+            BufferedImage image = drawEsotericImage(userData);
+            sendImage(chatId, image);
+
+            // 2. Получение описания эзотерических способностей
+            String esotericDescription = getEsotericAbilitiesDescription(userData);
+
+            // 3. Отправка описания
+            sendFormattedMessage(chatId, userData, "Эзотерические способности", esotericDescription);
+
+            // 4. Показать кнопки с дальнейшими действиями
+            showDescriptionButtons(chatId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            sendMessage(chatId, "Не удалось загрузить описание эзотерических способностей.");
+        }
+    }
+    private String getEsotericAbilitiesDescription(UserData userData) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get("esotericKeys.txt"));
+        Map<Integer, String> descriptions = new HashMap<>();
+
+        for (String line : lines) {
+            String[] parts = line.split(": ", 2);
+            if (parts.length == 2) {
+                try {
+                    int key = Integer.parseInt(parts[0].trim());
+                    String value = parts[1].trim();
+                    descriptions.put(key, value);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid key format in line: " + line);
+                }
+            } else {
+                System.err.println("Invalid line format: " + line);
+            }
+        }
+
+        StringBuilder description = new StringBuilder();
+        if (descriptions.containsKey(userData.getDestinyKey())) {
+            description.append("Ключ Реализации Предназначения: ").append(descriptions.get(userData.getDestinyKey())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getTalentKey())) {
+            description.append("Ключ Реализации Таланта: ").append(descriptions.get(userData.getTalentKey())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterPersonality())) {
+            description.append("Центр Личности: ").append(descriptions.get(userData.getCenterPersonality())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterDestiny())) {
+            description.append("Центр Предназначения: ").append(descriptions.get(userData.getCenterDestiny())).append("\n\n");
+        }
+        if (descriptions.containsKey(userData.getCenterFamilyPrograms())) {
+            description.append("Центр Родовых Программ: ").append(descriptions.get(userData.getCenterFamilyPrograms())).append("\n\n");
+        }
+
+        if (description.length() == 0) {
+            description.append("Описание для эзотерических способностей не найдено.");
+        }
+
+        return description.toString();
+    }
+
 
     private void handleArcanaPlanetsDescription(long chatId, UserData userData) throws TelegramApiException {
         try {
@@ -527,7 +592,7 @@ public class TriangleDrawingBot extends TelegramLongPollingBot {
             sendMessage(chatId, formatDescription(null, "", "Вы уже зарегистрированы."));
             sendBackButton(chatId);
         } else {
-            sendMessage(chatId, formatDescription(null, "", "Для регистрации введите ваше имя"));
+            sendMessage(chatId, formatDescription(null, "", "Встречайте бот-калькулятор от Натальи Яницкой, автора знаменитой «Теневой Матрицы Судьбы»!Для начала работы с калькулятором необходимо зарегистрироваться.\n\n Введите ваше имя"));
             registrationSteps.put(chatId, "name");
         }
     }
